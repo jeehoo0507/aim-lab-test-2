@@ -1,0 +1,17 @@
+{
+  "data_root": "data/coco_single",
+  "output_root": "outputs/experiment2",
+  "device": "cuda",
+  "epochs": 100,
+  "teacher_epochs": 30,
+  "batch_size": 32,
+  "accumulation_steps": 4,
+  "num_workers": 2,
+  "num_threads": 2,
+  "scratch_lr": 0.0005,
+  "pretrained_lr": 0.00005,
+  "teacher_lr": 0.00005,
+  "checkpoint_every": 10,
+  "diagnostic_epochs": [0, 10, 25, 50, 75, 100],
+  "diagnostic_repeats": 5
+}

@@ -1,0 +1,15 @@
+.venv/
+.cache/
+__pycache__/
+.pytest_cache/
+*.pyc
+data/
+outputs/
+logs/
+reports/smoke/
+*.pt
+*.pth
+*.tar.gz
+*.zip
+.env
+.DS_Store

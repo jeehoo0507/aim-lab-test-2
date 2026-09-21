@@ -1,0 +1,98 @@
+# MaskedKD 실험 2 — COCO 자연 이미지 분류
+
+Waterbirds 실험 1과 별도 저장소다. **코드와 실행 절차를 준비한 상태이며, 실제 COCO 학습 결과는 아직 없다.**
+
+검증 질문: 일반 자연 이미지에서도 student가 선택한 teacher 입력의 정보 제한이 학습 후반까지 남는가? 선택을 바꾸면 teacher 출력뿐 아니라 student 오류 교정·학습 속도·최종 분류 성능도 좋아지는가?
+
+[최종 실험 설계](docs/EXPERIMENT_2.md) · [저장 자료와 해석](docs/ARTIFACTS.md)
+
+## 구성
+
+- COCO 2017: 이미지에 주석된 객체 종류가 하나인 10클래스. 같은 종류의 여러 객체는 허용.
+- Teacher: ImageNet pretrained DeiT-Small → 분류 fine-tuning 30 epochs, seed별 한 개를 고정.
+- Student: DeiT-Tiny, scratch / ImageNet pretrained를 별도 비교, 각각 100 epochs.
+- 7방법 × 2초기화 × 3시드 = student 42개 + teacher 3개.
+- Student는 196개 공간 패치를 모두 사용. Masked teacher는 98개 + CLS를 사용.
+- 실제 COCO 데이터·GPU 학습은 서버에서 실행. 로컬 검증은 작은 합성 데이터와 CPU로 수행.
+
+## 서버에서 실행
+
+**모든 명령은 이 저장소를 clone한 폴더 안 터미널에서 실행한다.** 실험 1 폴더와 토큰/전역 Git 설정을 변경하지 않는다. `sudo`와 `activate`는 필요 없다. 기존 `uv`가 PATH에 있어야 한다.
+
+```bash
+git clone https://github.com/jeehoo0507/aim-lab-test-2.git
+cd aim-lab-test-2
+bash setup.sh check
+```
+
+`check`: lockfile 기반 Python 3.11 환경 설치 → 자동 테스트 → 작은 전체 흐름 smoke → GPU/저장 경로 출력. **실제 데이터 다운로드와 본 학습을 시작하지 않는다.** Linux x86_64는 torch 2.5.1 CUDA 12.4, macOS는 PyPI 패키지를 사용한다. NVIDIA driver 호환 여부는 서버 `check`에서 확인한다. CPU 점검은 `bash setup.sh check --device cpu`.
+
+```bash
+# 1. COCO 주석과 필요한 이미지 후보만 다운로드·품질 검사·고정 분할
+bash setup.sh prepare
+
+# 2. 실제 DeiT 크기와 batch 32로 7개 방법의 3-step VRAM 측정
+bash setup.sh benchmark
+
+# 3. seed 0: teacher + 두 초기화 각각 CE/Full KD, validation만 확인
+bash setup.sh pilot
+```
+
+Pilot은 본 실험과 같은 출력 폴더를 사용한다. **설정이 그대로라면 본 실행에서 완료한 teacher·CE·Full KD는 재학습하지 않는다.** 학습률·에포치·전처리를 바꾸면 새로운 output root/config를 사용한다. 기존 결과 위에 덮어쓰지 않는다.
+
+Pilot 검토 후 동일 설정으로 전체 학습하는 한 줄:
+
+```bash
+bash setup.sh run
+```
+
+동시 실행은 기본 1개다. 서버 benchmark에서 여유 VRAM/CPU를 확인한 뒤 seed 작업을 **최대 2개** 병렬로 실행할 수 있다. 각 seed 내부의 방법·초기화는 순차 실행하고 teacher를 공유한다.
+
+```bash
+bash setup.sh run --jobs 2
+```
+
+SSH/터미널 종료 후에도 계속 실행하려면, 같은 실행을 중복으로 켜지 말고 아래 명령으로 시작한다.
+
+```bash
+mkdir -p logs
+nohup bash setup.sh run --jobs 2 > logs/launcher.log 2>&1 < /dev/null &
+tail -f logs/launcher.log
+```
+
+병렬 세부 로그는 `logs/seed_*`에 기록된다. 한 epoch 도중 중단되면 그 epoch는 다시 실행하며, 마지막 완료 epoch부터 재개한다. 다른 사람의 GPU 프로세스에는 접근하지 않는다. VRAM 여유가 충분해도 연산량은 경합하므로 2배 속도를 보장하지 않는다.
+
+학습/설정 비교가 끝난 뒤 **고정한 best·last checkpoint만 test 평가**하고 내보낸다:
+
+```bash
+bash setup.sh evaluate
+bash setup.sh export --push
+```
+
+`export --push`는 새 `reports/<timestamp>/`만 commit/push한다. 데이터·가중치·가상환경·기존 다른 변경은 올리지 않는다. 인증이나 push가 실패해도 보고서는 남는다. 모델 학습 중에는 export하지 않고 완료 후 실행한다. 이 단계에서 Git 인증을 이미 설정한 서버라면 별도 설정은 필요 없다.
+
+## 저장 경로·공간
+
+기본 저장 위치는 clone 폴더 아래 `data/`, `outputs/`, `.cache/`, `logs/`다. `configs/experiment2.json`의 `data_root`, `output_root`를 별도 SSD/HDD 경로로 지정할 수 있다. `preflight.json`과 내보낸 `storage.json`에 실제 경로·symlink 해석·파일시스템·마운트·남은 공간을 기록한다.
+
+| 자료 | 기본 저장 |
+| --- | --- |
+| Loss/LR/학습 시간/검증 성능, validation 전체 이미지 logits | 매 epoch |
+| 고정 200장 student attention·교체 전/후 indices·teacher full/raw/actual logits | epoch 0 + 매 epoch |
+| 같은 checkpoint에서 6가지 마스크, 랜덤 5회 반복 | 0·10·25·50·75·100 + best |
+| 모델 가중치 | epoch 0·10·20·…·100 + best |
+| 중단 재개용 weights/optimizer/scaler/history/best weights | last, 매 epoch 원자적 교체 |
+| 후반 개입 실험 준비 | MaskedKD만 epoch 50의 전체 재개 상태 별도 보존 |
+| Test 이미지별 logits/labels/ID | best·last, 명시적 evaluate 후 |
+
+42개 student의 정기 10개 snapshot 가중치만 약 **9.3GB**, init·best·last와 teacher까지 더한 전체 checkpoint 예상은 **약 18GB**다. probe·분석 자료·후보 이미지·CUDA 환경/캐시는 추가다. **총 30~40GB 정도를 예비 공간으로 잡고 서버에서 실제 크기를 측정**한다. 이는 보장된 실측값이 아니다. 공유 cache까지 다른 프로젝트 사용분으로 중복 계산하지 않는다.
+
+100 epochs 가중치를 모두 보관하는 설정은 `checkpoint_every=1`이며 student 정기 가중치만 약 93GB로 증가한다. 현재 기본값은 사용자가 선택한 **10 epoch마다 저장**이다. 데이터를 전체 COCO 이미지 archive로 받지 않고 대상 후보를 개별 다운로드하므로 원본 전체 20GB+를 요구하지 않는다.
+
+가중치가 없는 중간 epoch도 저장된 probe/validation 지표는 다시 분석할 수 있다. **그 epoch의 새로운 이미지·다른 mask 실험·gradient 분석을 임의로 다시 실행하는 것은 불가능**하다. 10단위 snapshot에서 새 평가를 하거나, 정확한 분기 학습에는 optimizer를 포함한 `last.pt` / `resume_050.pt`를 사용한다.
+
+## 구현 출처
+
+모델의 last-layer CLS attention과 token gathering은 [공식 MaskedKD](https://github.com/effl-lab/MaskedKD)를 따르는 torch-only adaptation이다. `vendor/MaskedKD/UPSTREAM.json`에 원본 revision과 출처를 보존한다. 테스트는 원본 클래스와 logits·attention·gradient를 비교한다. 이 COCO subset·초기화·100epoch 프로토콜은 **원 논문 ImageNet 실험의 완전 재현이 아니다.**
+
+이전 코드의 배치 크기 기반 LR 배율을 제거했다. config의 `scratch_lr=5e-4`, `pretrained_lr=5e-5`가 실제 optimizer peak LR이며 매 epoch 기록된다.
