@@ -34,7 +34,9 @@ class Config:
     temperature: float = 1.0
     keep_tokens: int = 98
     foreground_threshold: float = 0.5
-    checkpoint_every: int = 10
+    checkpoint_every: int = 50
+    checkpoint_target_gb: float = 5.0
+    output_warning_gb: float = 10.0
     diagnostic_epochs: tuple = (0, 10, 25, 50, 75, 100)
     diagnostic_repeats: int = 5
     student_init: str = "imagenet"
@@ -68,6 +70,8 @@ class Config:
             raise ValueError("Invalid smoothing/drop path")
         if min(cfg.scratch_lr, cfg.pretrained_lr, cfg.teacher_lr, cfg.grad_clip) <= 0 or cfg.min_lr < 0 or cfg.weight_decay < 0:
             raise ValueError("Invalid optimization parameters")
+        if cfg.checkpoint_target_gb <= 0 or cfg.output_warning_gb <= cfg.checkpoint_target_gb:
+            raise ValueError("output_warning_gb must exceed the positive checkpoint_target_gb")
         if cfg.max_train_batches is not None and cfg.max_train_batches < 1:
             raise ValueError("max_train_batches must be positive")
         return cfg

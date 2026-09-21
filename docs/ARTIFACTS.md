@@ -10,9 +10,9 @@
 | `probe/epoch_NNN.npz` | 고정200장 GT coverage/FG, raw attention196, raw/actual 선택 indices, 실제 swaps, student logits, teacher full/raw/actual logits, full teacher attention | 0 및 매 epoch |
 | `probe/epoch_NNN_counterfactual.npz` | 동일 student에서 6가지 teacher 입력 방식을 5회 반복한 indices/swaps/logits | 0/10/25/50/75/100 |
 | `probe/best*.npz` | best checkpoint의 같은 진단 | 완료 |
-| `epoch_NNN.pt` | 가중치와 provenance; optimizer 없음 | 0/10단위/final |
+| `epoch_050.pt` | 가중치와 provenance; optimizer 없음 | student epoch50 |
 | `best.pt` | val macro로 선택한 weights/provenance | best 갱신 |
-| `last.pt` | weights + optimizer + AMP scaler + best weights + history | 매 epoch 교체 |
+| `last.pt` | 진행 중에는 재개 전체 상태, 완료 후에는 final weights로 축소 | 매 epoch 교체/완료 시 compact |
 | `resume_050.pt` | 후반 분기용 full 상태 | MaskedKD50에만 |
 | `test_best.npz`, `test_last.npz`, `test_metrics.json` | 최종 test 이미지별 예측/정답 및 macro/class별 결과 | 명시적 evaluate |
 

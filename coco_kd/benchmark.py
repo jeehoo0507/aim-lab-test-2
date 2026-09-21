@@ -286,9 +286,25 @@ def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=2):
     report["estimated_probe_validation_gib"] = (42 * ((cfg.epochs + 2) * probe_bytes + n_detail * diagnostic_bytes
             + cfg.epochs * _worst(single["rows"], "student", "validation_bytes"))
             + 3 * cfg.teacher_epochs * _worst(single["rows"], "teacher", "validation_bytes")) / 1024**3
+    estimated_output_gb = (report["checkpoint_storage"]["total_decimal_gb"]
+                           + report["estimated_probe_validation_gib"] * 1024**3 / 1e9 + .25)
+    report["storage_budget"] = {"estimated_output_decimal_gb": estimated_output_gb,
+                                "recommended_decimal_gb": cfg.checkpoint_target_gb,
+                                "warning_decimal_gb": cfg.output_warning_gb,
+                                "above_warning": estimated_output_gb > cfg.output_warning_gb,
+                                "note": "Includes checkpoints, measured probe/validation projection and 0.25GB metadata/analysis allowance; excludes data and environment/cache."}
     write_json(destination, report)
+    shared_report = None
+    if cfg.model_scale == "deit":
+        shared_report = Path("reports/benchmark/latest.json")
+        write_json(shared_report, report)
     print(json.dumps({"recommendation": report["recommendation"], "checkpoint_storage": report["checkpoint_storage"],
                       "probe_validation_gib": report["estimated_probe_validation_gib"]}, indent=2), flush=True)
+    print(json.dumps({"storage_budget": report["storage_budget"]}, indent=2), flush=True)
+    if report["storage_budget"]["above_warning"]:
+        print(f"WARNING: projected outputs exceed the {cfg.output_warning_gb:.2f}GB planning threshold", flush=True)
+    if shared_report:
+        print(f"Shareable benchmark report: {shared_report.resolve()}", flush=True)
     print("After pilot review: bash setup.sh run --jobs auto", flush=True)
     return report
 

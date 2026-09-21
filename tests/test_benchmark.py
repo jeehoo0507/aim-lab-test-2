@@ -38,8 +38,9 @@ def test_parallel_recommendation_accounts_for_three_seed_tail_and_contention():
 
 def test_storage_estimate_includes_resume_teacher_and_midpoint():
     result = checkpoint_estimate(Config(), 5526346, 21669514)
-    expected = (5526346 * 4 * 16 * 42 + 21669514 * 4 * 9 * 3 + 5526346 * 4 * 4 * 6)
+    expected = (5526346 * 4 * 3 * 42 + 21669514 * 4 * 2 * 3 + 5526346 * 4 * 4 * 6)
     assert result["total_decimal_gb"] == pytest.approx(expected / 1e9)
+    assert result["within_target"]
 
 
 def test_real_spawned_single_and_dual_benchmark_and_auto_guards(tmp_path):
@@ -54,6 +55,7 @@ def test_real_spawned_single_and_dual_benchmark_and_auto_guards(tmp_path):
     assert len(report["trials"][0]["rows"]) == 8
     assert automatic_jobs(cfg) == 1
     assert report["estimated_probe_validation_gib"] > 0
+    assert not report["storage_budget"]["above_warning"]
     # Exercise multiprocessing/barriers and per-worker scratch files on CPU.
     dual = run_trial(cfg, 2, warmup=1, steps=1)
     assert len(dual["rows"]) == 16

@@ -193,15 +193,15 @@ def _train(cfg, role, method, directory, stop_after):
         save_checkpoint(directory / "best.pt", {**base, "epoch": best_epoch, "model": best_weights})
         write_json(directory / "history.json", history)
         del state
-    else:
-        save_checkpoint(directory / "epoch_000.pt", {**base, "epoch": 0, "model": cpu_state(model)})
-        if probe:
-            probe.log(model, 0, method)
+    elif probe:
+        # Epoch-0 raw diagnostics are sufficient; the deterministic initialization can be reconstructed.
+        probe.log(model, 0, method)
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
     for epoch in range(start + 1, epochs + 1):
-        if cfg.model_scale == "deit" and shutil.disk_usage(directory).free < 2 * 1024**3:
-            raise OSError("Less than 2 GiB free at output path; stopped before next epoch, resume after freeing space")
+        if cfg.model_scale == "deit":
+            if shutil.disk_usage(directory).free < 2 * 1024**3:
+                raise OSError("Less than 2 GiB free at output path; stopped before next epoch, resume after freeing space")
         begun = time.monotonic()
         lr = learning_rate(cfg, epoch, epochs, role)
         for group in optimizer.param_groups:
@@ -220,7 +220,7 @@ def _train(cfg, role, method, directory, stop_after):
         history.append({"epoch": epoch, "lr": lr, "train": training, "validation": val,
                         "epoch_seconds_with_probe": time.monotonic() - begun, "peak_allocated_gib": peak})
         payload = {**base, "model": cpu_state(model), "epoch": epoch}
-        if epoch % cfg.checkpoint_every == 0 or epoch == epochs:
+        if epoch % cfg.checkpoint_every == 0 and epoch < epochs:
             save_checkpoint(directory / f"epoch_{epoch:03d}.pt", payload)
         # Full resume state only for latest epoch; periodic snapshots are weights only.
         resume_payload = {**payload, "optimizer": optimizer.state_dict(),
@@ -241,6 +241,9 @@ def _train(cfg, role, method, directory, stop_after):
               "checkpoint_selection": "maximum validation macro accuracy; earliest epoch breaks ties",
               "test_evaluated": False, "seconds_total": sum(r["epoch_seconds_with_probe"] for r in history)}
     write_json(result_path, result)
+    # Completed runs no longer need optimizer/scaler/history inside last.pt. Keeping a compact
+    # best and final pair preserves both test evaluations while releasing most checkpoint space.
+    save_checkpoint(directory / "last.pt", {**payload, "best_epoch": best_epoch, "best_score": best_score})
     return directory / "best.pt"
 
 

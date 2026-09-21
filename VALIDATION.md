@@ -18,4 +18,4 @@
 
 **Not yet validated on the server:** CUDA driver/runtime, A5000 peak VRAM/throughput, real COCO image download/QC counts, real training convergence/accuracy. The code includes `check`, `prepare`, `benchmark`, and `pilot` for these steps. No real COCO experiments were run locally.
 
-Periodic checkpoints are weight snapshots; full resume state is latest plus MaskedKD epoch50. Exported GitHub reports do not contain model weights or the complete attention tensor files.
+The storage-limited policy keeps student epoch50/best/final, teacher best/final, and full resume state only while a run is active plus MaskedKD epoch50. The completed checkpoint projection is about 3.8GB; benchmark projects raw probe/validation output and warns above 10GB without imposing a training cap. Exported GitHub reports do not contain model weights or the complete attention tensor files.

@@ -44,8 +44,9 @@ def test_resume_equivalent_to_uninterrupted_and_exports_probes(tmp_path):
     for key in expected["model"]:
         torch.testing.assert_close(actual["model"][key], expected["model"][key], rtol=0, atol=0)
     assert expected["best_epoch"] == actual["best_epoch"]
+    assert "optimizer" not in actual and "best_model" not in actual
     assert (run / "epoch_002.pt").exists() and not (run / "epoch_001.pt").exists()
-    assert (run / "epoch_003.pt").exists()
+    assert not (run / "epoch_003.pt").exists()  # compact last.pt is the final snapshot
     with np.load(run / "probe/epoch_003.npz") as a:
         assert a["raw_indices"].shape == a["actual_indices"].shape == (4, 98)
         assert a["teacher_full_logits"].shape == (4, 2)

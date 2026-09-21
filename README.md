@@ -52,6 +52,14 @@ bash setup.sh run
 
 `outputs/experiment2/benchmark.json`에 방법별 처리량·VRAM, 단독/병렬 예상 시간, 권장 작업 수, checkpoint/probe 용량을 저장한다. **전체 42개 student + teacher 3개를 처음부터 실행할 때의 추정**이며, 이미 완료한 pilot을 뺀 잔여 시간은 아니다. 원시 예측에 1.5배 여유를 둔 계획 범위를 함께 출력하며 통계적 신뢰구간은 아니다. 설치·다운로드·최종 test/export는 별도다.
 
+벤치가 끝나면 공유용 결과 `reports/benchmark/latest.json`도 생성된다. 서버에서 아래 파일 하나만 GitHub에 올리면 다른 컴퓨터에서 시간·VRAM·권장 병렬 수를 분석할 수 있다.
+
+```bash
+git add reports/benchmark/latest.json
+git commit -m "data: add A5000 benchmark"
+git push origin main
+```
+
 Pilot 검토 후 권장 병렬 수를 적용하려면:
 
 ```bash
@@ -88,16 +96,16 @@ bash setup.sh export --push
 | Loss/LR/학습 시간/검증 성능, validation 전체 이미지 logits | 매 epoch |
 | 고정 200장 student attention·교체 전/후 indices·teacher full/raw/actual logits | epoch 0 + 매 epoch |
 | 같은 checkpoint에서 6가지 마스크, 랜덤 5회 반복 | 0·10·25·50·75·100 + best |
-| 모델 가중치 | epoch 0·10·20·…·100 + best |
+| 모델 가중치 | epoch 50 + best·final |
 | 중단 재개용 weights/optimizer/scaler/history/best weights | last, 매 epoch 원자적 교체 |
 | 후반 개입 실험 준비 | MaskedKD만 epoch 50의 전체 재개 상태 별도 보존 |
 | Test 이미지별 logits/labels/ID | best·last, 명시적 evaluate 후 |
 
-42개 student의 정기 10개 snapshot 가중치만 약 **9.3GB**, init·best·last와 teacher까지 더한 전체 checkpoint 예상은 **약 18GB**다. probe·분석 자료·후보 이미지·CUDA 환경/캐시는 추가다. **총 30~40GB 정도를 예비 공간으로 잡고 서버에서 실제 크기를 측정**한다. 이는 보장된 실측값이 아니다. 공유 cache까지 다른 프로젝트 사용분으로 중복 계산하지 않는다.
+완료 상태의 전체 checkpoint 예상은 약 **3.8GB**다. Student는 epoch50·best·final을, teacher는 best·final을 남기고 MaskedKD만 후반 분기용 epoch50 optimizer 상태를 추가 보존한다. 실행 중인 run의 `last.pt`는 중단 재개를 위해 optimizer까지 가지지만 완료 시 final weights로 자동 축소된다.
 
-100 epochs 가중치를 모두 보관하는 설정은 `checkpoint_every=1`이며 student 정기 가중치만 약 93GB로 증가한다. 현재 기본값은 사용자가 선택한 **10 epoch마다 저장**이다. 데이터를 전체 COCO 이미지 archive로 받지 않고 대상 후보를 개별 다운로드하므로 원본 전체 20GB+를 요구하지 않는다.
+`outputs/experiment2`의 권장 계획값은 **5GB**, 용량 경고 기준은 **10GB**다. `benchmark`가 실제 probe·validation 파일 크기까지 투영해 보고하며 10GB를 넘으면 경고만 한다. 용량 때문에 9GB에서 학습을 강제 정지하지 않는다. 이 계산은 **실험 출력 폴더 기준**이며 `data/`, `.venv/`, `.cache/`는 포함하지 않는다. 데이터는 전체 COCO archive 대신 후보 이미지만 받는다. 실제 디스크 여유가 2GiB 미만일 때만 파일 손상을 피하기 위해 안전 정지한다.
 
-가중치가 없는 중간 epoch도 저장된 probe/validation 지표는 다시 분석할 수 있다. **그 epoch의 새로운 이미지·다른 mask 실험·gradient 분석을 임의로 다시 실행하는 것은 불가능**하다. 10단위 snapshot에서 새 평가를 하거나, 정확한 분기 학습에는 optimizer를 포함한 `last.pt` / `resume_050.pt`를 사용한다.
+가중치가 없는 중간 epoch도 저장된 probe/validation 지표는 다시 분석할 수 있다. **그 epoch의 새로운 이미지·다른 mask 실험·gradient 분석을 임의로 다시 실행하는 것은 불가능**하다. epoch50 snapshot에서 새 평가를 하거나, 정확한 후반 분기에는 MaskedKD의 `resume_050.pt`를 사용한다. 진행 중 중단은 `last.pt`에서 재개한다.
 
 ## 구현 출처
 

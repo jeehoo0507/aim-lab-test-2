@@ -37,16 +37,19 @@ def storage_report(paths):
 
 
 def checkpoint_estimate(cfg, student_parameters, teacher_parameters):
-    def snapshots(epochs):
-        return 1 + epochs // cfg.checkpoint_every + int(epochs % cfg.checkpoint_every != 0)
-    students = student_parameters * 4 * (snapshots(cfg.epochs) + 5) * len(METHODS) * 2 * 3
-    teachers = teacher_parameters * 4 * (snapshots(cfg.teacher_epochs) + 5) * 3
+    # Intermediate weight snapshots exclude the final epoch: compact last.pt already stores it.
+    def intermediate(epochs):
+        return (epochs - 1) // cfg.checkpoint_every
+    students = student_parameters * 4 * (intermediate(cfg.epochs) + 2) * len(METHODS) * 2 * 3
+    teachers = teacher_parameters * 4 * (intermediate(cfg.teacher_epochs) + 2) * 3
     midpoint = student_parameters * 4 * 4 * 2 * 3 if cfg.epochs >= 50 else 0
     return {"student_gib": students / 1024**3, "teacher_gib": teachers / 1024**3,
             "maskedkd_midpoint_gib": midpoint / 1024**3,
             "total_gib": (students + teachers + midpoint) / 1024**3,
             "total_decimal_gb": (students + teachers + midpoint) / 10**9,
-            "excludes": "data, environments/caches, probes/validation, analysis/export; approximate tensor bytes"}
+            "target_decimal_gb": cfg.checkpoint_target_gb,
+            "within_target": (students + teachers + midpoint) / 10**9 <= cfg.checkpoint_target_gb,
+            "excludes": "data, environments/caches, probes/validation, analysis/export; approximate completed-run tensor bytes"}
 
 
 def preflight(cfg, destination):
@@ -55,12 +58,15 @@ def preflight(cfg, destination):
     teacher = build_model("teacher", cfg)
     count = sum(p.numel() for p in student.parameters())
     storage = checkpoint_estimate(cfg, count, sum(p.numel() for p in teacher.parameters()))
+    if not storage["within_target"]:
+        raise OSError(f"Checkpoint plan {storage['total_decimal_gb']:.2f}GB exceeds {cfg.checkpoint_target_gb:.2f}GB target")
     report = {"python": sys.version, "platform": platform.platform(), "torch": torch.__version__,
               "git_commit": command(["git", "rev-parse", "HEAD"]),
               "git_status": command(["git", "status", "--short"]),
               "device": str(device), "student_parameters": count,
               "teacher_parameters": sum(p.numel() for p in teacher.parameters()),
               "checkpoint_storage": storage,
+              "output_warning_decimal_gb": cfg.output_warning_gb,
               "estimate_excludes": "raw probes, data, uv environment/caches, analysis/export",
               "storage": storage_report({"project": Path.cwd(), "data": cfg.data_root, "outputs": cfg.output_root,
                   "torch_cache": os.environ.get("TORCH_HOME", str(Path.home() / ".cache/torch")),
