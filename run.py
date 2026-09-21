@@ -25,7 +25,11 @@ def parser():
             q.add_argument("--inits", nargs="+", choices=["scratch", "imagenet"], default=["scratch", "imagenet"])
             q.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
         if name == "pipeline":
-            q.add_argument("--jobs", type=int, choices=[1, 2], default=1)
+            q.add_argument("--jobs", choices=["1", "2", "auto"], default="1")
+        if name == "benchmark":
+            q.add_argument("--steps", type=int, default=8, help="Measured optimizer updates after warmup; accumulation included")
+            q.add_argument("--warmup", type=int, default=2)
+            q.add_argument("--max-jobs", type=int, choices=[1, 2], default=2)
         if name == "train":
             q.add_argument("--role", choices=["teacher", "student"], default="student")
             q.add_argument("--method", choices=METHODS, default="student")
@@ -46,6 +50,11 @@ def pipeline(cfg, args):
     if len(manifest["classes"]) != cfg.num_classes:
         raise ValueError("Config class count does not match dataset")
     preflight(cfg, Path(cfg.output_root) / "preflight.json")
+    if args.jobs == "auto":
+        from coco_kd.benchmark import automatic_jobs
+        args.jobs = automatic_jobs(cfg)
+    else:
+        args.jobs = int(args.jobs)
     # One job owns one seed, so teacher is never trained twice for different student initializations.
     def run_seed(seed):
         commands = [("teacher", "student", "imagenet")]
@@ -88,7 +97,7 @@ def main():
             print("PASSED dataset hashes/splits/probe validation")
     elif args.command == "benchmark":
         from coco_kd.benchmark import benchmark
-        benchmark(cfg, Path(cfg.output_root) / "benchmark.json")
+        benchmark(cfg, Path(cfg.output_root) / "benchmark.json", steps=args.steps, warmup=args.warmup, max_jobs=args.max_jobs)
     elif args.command == "train":
         from coco_kd.train import train
         train(replace(cfg, seed=args.seed, student_init=args.init), role=args.role, method=args.method, stop_after=args.stop_after)

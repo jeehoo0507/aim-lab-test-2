@@ -36,21 +36,32 @@ def storage_report(paths):
     return rows
 
 
+def checkpoint_estimate(cfg, student_parameters, teacher_parameters):
+    def snapshots(epochs):
+        return 1 + epochs // cfg.checkpoint_every + int(epochs % cfg.checkpoint_every != 0)
+    students = student_parameters * 4 * (snapshots(cfg.epochs) + 5) * len(METHODS) * 2 * 3
+    teachers = teacher_parameters * 4 * (snapshots(cfg.teacher_epochs) + 5) * 3
+    midpoint = student_parameters * 4 * 4 * 2 * 3 if cfg.epochs >= 50 else 0
+    return {"student_gib": students / 1024**3, "teacher_gib": teachers / 1024**3,
+            "maskedkd_midpoint_gib": midpoint / 1024**3,
+            "total_gib": (students + teachers + midpoint) / 1024**3,
+            "total_decimal_gb": (students + teachers + midpoint) / 10**9,
+            "excludes": "data, environments/caches, probes/validation, analysis/export; approximate tensor bytes"}
+
+
 def preflight(cfg, destination):
     device = setup_device(cfg)
     student = build_model("student", cfg)
     teacher = build_model("teacher", cfg)
     count = sum(p.numel() for p in student.parameters())
-    snapshots = 1 + cfg.epochs // cfg.checkpoint_every + int(cfg.epochs % cfg.checkpoint_every != 0)
-    # periodic weights + best + latest (weights, best weights, Adam moments)
-    weight_gib = count * 4 * (snapshots + 5) * 42 / 1024**3
+    storage = checkpoint_estimate(cfg, count, sum(p.numel() for p in teacher.parameters()))
     report = {"python": sys.version, "platform": platform.platform(), "torch": torch.__version__,
               "git_commit": command(["git", "rev-parse", "HEAD"]),
               "git_status": command(["git", "status", "--short"]),
               "device": str(device), "student_parameters": count,
               "teacher_parameters": sum(p.numel() for p in teacher.parameters()),
-              "student_checkpoint_estimate_42_runs_gib": weight_gib,
-              "estimate_excludes": "teacher weights, raw probes, data, uv environment/caches; measure after smoke",
+              "checkpoint_storage": storage,
+              "estimate_excludes": "raw probes, data, uv environment/caches, analysis/export",
               "storage": storage_report({"project": Path.cwd(), "data": cfg.data_root, "outputs": cfg.output_root,
                   "torch_cache": os.environ.get("TORCH_HOME", str(Path.home() / ".cache/torch")),
                   "uv_cache": os.environ.get("UV_CACHE_DIR", str(Path.home() / ".cache/uv"))}),

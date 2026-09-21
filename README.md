@@ -31,7 +31,7 @@ bash setup.sh check
 # 1. COCO 주석과 필요한 이미지 후보만 다운로드·품질 검사·고정 분할
 bash setup.sh prepare
 
-# 2. 실제 DeiT 크기와 batch 32로 7개 방법의 3-step VRAM 측정
+# 2. 실제 데이터로 단독/2개 병렬 속도·VRAM·총 소요 시간 측정
 bash setup.sh benchmark
 
 # 3. seed 0: teacher + 두 초기화 각각 CE/Full KD, validation만 확인
@@ -46,21 +46,29 @@ Pilot 검토 후 동일 설정으로 전체 학습하는 한 줄:
 bash setup.sh run
 ```
 
-동시 실행은 기본 1개다. 서버 benchmark에서 여유 VRAM/CPU를 확인한 뒤 seed 작업을 **최대 2개** 병렬로 실행할 수 있다. 각 seed 내부의 방법·초기화는 순차 실행하고 teacher를 공유한다.
+동시 실행은 기본 1개다. `benchmark`는 teacher와 7개 방법을 각각 **warmup 2 optimizer updates + 측정 8 updates**(update당 microbatch 4개)로 실행한다. 실제 데이터 로딩, accumulation, 대표 validation·매 epoch probe·상세 probe·checkpoint 쓰기까지 측정한다. 무작위 초기화된 임시 모델을 사용하며 실험 가중치를 덮어쓰지 않는다.
+
+먼저 1개 프로세스를 측정하고 VRAM 여유가 충분할 때만 같은 GPU에 2개 프로세스를 띄워 비교한다. 전체 3개 시드의 마지막 단독 실행까지 계산해 **예상 완료 시간이 10% 이상 단축**되면 2개, 아니면 1개를 권장한다. 여유 메모리는 프로세스당 추가 0.75GiB와 GPU 전체의 10%(최소 2GiB)를 보수적으로 확보한다. 병렬 측정 실패 시 1개로 권장한다. 1개만 측정하려면 `bash setup.sh benchmark --max-jobs 1`.
+
+`outputs/experiment2/benchmark.json`에 방법별 처리량·VRAM, 단독/병렬 예상 시간, 권장 작업 수, checkpoint/probe 용량을 저장한다. **전체 42개 student + teacher 3개를 처음부터 실행할 때의 추정**이며, 이미 완료한 pilot을 뺀 잔여 시간은 아니다. 원시 예측에 1.5배 여유를 둔 계획 범위를 함께 출력하며 통계적 신뢰구간은 아니다. 설치·다운로드·최종 test/export는 별도다.
+
+Pilot 검토 후 권장 병렬 수를 적용하려면:
 
 ```bash
-bash setup.sh run --jobs 2
+bash setup.sh run --jobs auto
 ```
 
 SSH/터미널 종료 후에도 계속 실행하려면, 같은 실행을 중복으로 켜지 말고 아래 명령으로 시작한다.
 
 ```bash
 mkdir -p logs
-nohup bash setup.sh run --jobs 2 > logs/launcher.log 2>&1 < /dev/null &
+nohup bash setup.sh run --jobs auto > logs/launcher.log 2>&1 < /dev/null &
 tail -f logs/launcher.log
 ```
 
-병렬 세부 로그는 `logs/seed_*`에 기록된다. 한 epoch 도중 중단되면 그 epoch는 다시 실행하며, 마지막 완료 epoch부터 재개한다. 다른 사람의 GPU 프로세스에는 접근하지 않는다. VRAM 여유가 충분해도 연산량은 경합하므로 2배 속도를 보장하지 않는다.
+`auto`는 24시간 이내, 같은 데이터·설정·코드·GPU의 완료된 벤치 결과만 사용한다. pilot 후 오래 지났으면 benchmark를 다시 실행한다. 시작 시 VRAM이 줄었으면 2개 권장을 1개로 낮춘다. 각 seed 내부 방법·초기화는 순차 실행하고 teacher를 공유한다. 기본 자동 병렬 상한은 **2개**이며 `--jobs 1` 또는 `--jobs 2`로 직접 지정할 수도 있다.
+
+병렬 세부 로그는 `logs/seed_*`에 기록된다. 한 epoch 도중 중단되면 그 epoch는 다시 실행하며, 마지막 완료 epoch부터 재개한다. 다른 사람의 GPU 프로세스에는 접근하지 않는다. VRAM 여유가 충분해도 연산량은 경합하므로 2배 속도를 보장하지 않는다. 벤치 시점의 공유 서버 부하가 바뀌면 예상 시간도 달라진다.
 
 학습/설정 비교가 끝난 뒤 **고정한 best·last checkpoint만 test 평가**하고 내보낸다:
 
