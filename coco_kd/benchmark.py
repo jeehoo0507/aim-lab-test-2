@@ -213,35 +213,50 @@ def time_per_seed(trial, cfg, train_count):
             "train_epoch_seconds_by_method": train_time}
 
 
-def recommend(single, parallel, cfg, train_count, seeds=3):
+def recommend(single, parallel_trials, cfg, train_count, seeds=3):
     one = time_per_seed(single, cfg, train_count)
     result = {"recommended_jobs": 1, "serial_hours": seeds * one["total_seconds"] / 3600,
-              "one_seed": one, "reason": "A valid, materially faster parallel trial is required"}
-    if parallel is not None and parallel["status"] == "passed":
-        two = time_per_seed(parallel, cfg, train_count)
-        # Whole-seed scheduler: three seeds on two workers leave one single-seed tail.
-        duration = (seeds // 2) * two["total_seconds"] + (seeds % 2) * one["total_seconds"]
-        result.update(parallel_hours=duration / 3600,
-                      aggregate_throughput_speedup=2 * one["total_seconds"] / two["total_seconds"],
-                      full_plan_speedup=seeds * one["total_seconds"] / duration)
-        if result["full_plan_speedup"] >= 1.10:
-            result.update(recommended_jobs=2, reason="Projected full-plan time improves >=10%, with VRAM headroom")
-        else:
-            result["reason"] = "Parallel contention/tail saves <10%; prefer one worker"
-    chosen = result.get("parallel_hours") if result["recommended_jobs"] == 2 else result["serial_hours"]
+              "one_seed": one, "reason": "A valid, materially faster parallel trial is required",
+              "candidates": {}}
+    times = {1: one}
+    for trial in parallel_trials:
+        if trial["status"] == "passed":
+            times[trial["jobs"]] = time_per_seed(trial, cfg, train_count)
+    best_hours = result["serial_hours"]
+    for jobs, measured in sorted(times.items()):
+        if jobs == 1:
+            continue
+        batches, remainder = divmod(seeds, jobs)
+        duration = batches * measured["total_seconds"]
+        if remainder:
+            duration += times[remainder]["total_seconds"]
+        hours = duration / 3600
+        candidate = {"hours": hours,
+                     "aggregate_throughput_speedup": jobs * one["total_seconds"] / measured["total_seconds"],
+                     "full_plan_speedup": result["serial_hours"] / hours}
+        result["candidates"][str(jobs)] = candidate
+        if candidate["full_plan_speedup"] >= 1.10 and hours < best_hours:
+            best_hours = hours
+            result.update(recommended_jobs=jobs, parallel_hours=hours,
+                          aggregate_throughput_speedup=candidate["aggregate_throughput_speedup"],
+                          full_plan_speedup=candidate["full_plan_speedup"],
+                          reason="Fastest measured full-plan time with >=10% improvement and VRAM headroom")
+    if result["recommended_jobs"] == 1 and times.keys() != {1}:
+        result["reason"] = "Parallel contention/tail saves <10%; prefer one worker"
+    chosen = best_hours
     result["planning_range_hours"] = [chosen, chosen * 1.5]
     result["excludes"] = "download, initial environment setup, final test/export; full 42-student/3-teacher plan, not remaining work"
     return result
 
 
-def memory_requirement(single, total_gib):
-    per_worker = max(r["peak_reserved_gib"] for r in single["rows"]) + .75
-    return 2 * per_worker + max(2.0, .1 * total_gib)
+def memory_requirement(trial, total_gib):
+    per_worker = max(r["peak_reserved_gib"] for r in trial["rows"]) + .75
+    return trial["jobs"] * per_worker + max(2.0, .1 * total_gib)
 
 
-def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=2):
-    if steps < 1 or warmup < 1 or max_jobs not in (1, 2):
-        raise ValueError("Positive warmup/steps and max_jobs 1 or 2 required")
+def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=3):
+    if steps < 1 or warmup < 1 or max_jobs not in (1, 2, 3):
+        raise ValueError("Positive warmup/steps and max_jobs 1, 2 or 3 required")
     manifest = validate_manifest(cfg.data_root)
     device = setup_device(cfg)
     train_count = sum(r["split"] == "train" for r in manifest["images"])
@@ -256,23 +271,28 @@ def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=2):
     single = run_trial(cfg, 1, warmup, steps)
     report["trials"].append(single)
     write_json(destination, report)
-    parallel = None
-    if device.type == "cuda" and max_jobs == 2:
+    parallel = []
+    if device.type == "cuda" and max_jobs > 1:
         free, total = torch.cuda.mem_get_info(device)
-        needed = memory_requirement(single, total / 1024**3)
-        report["parallel_required_free_gib"] = needed
+        report["required_free_gib_by_jobs"] = {}
         report["free_gib_before_parallel"] = free / 1024**3
-        if free / 1024**3 >= needed:
-            print("Enough VRAM headroom; comparing two concurrent workers", flush=True)
-            try:
-                parallel = run_trial(cfg, 2, warmup, steps)
-                if memory_requirement(parallel, total / 1024**3) > free / 1024**3:
-                    parallel["status"] = "insufficient_headroom"
-            except (RuntimeError, TimeoutError) as error:
-                parallel = {"jobs": 2, "status": "failed", "error": str(error)}
-        else:
-            parallel = {"jobs": 2, "status": "skipped_memory"}
-        report["trials"].append(parallel)
+        per_worker = max(r["peak_reserved_gib"] for r in single["rows"]) + .75
+        margin = max(2.0, .1 * total / 1024**3)
+        for jobs in range(2, max_jobs + 1):
+            needed = jobs * per_worker + margin
+            report["required_free_gib_by_jobs"][str(jobs)] = needed
+            if free / 1024**3 >= needed:
+                print(f"Enough VRAM headroom; comparing {jobs} concurrent workers", flush=True)
+                try:
+                    trial = run_trial(cfg, jobs, warmup, steps)
+                    if memory_requirement(trial, total / 1024**3) > free / 1024**3:
+                        trial["status"] = "insufficient_headroom"
+                except (RuntimeError, TimeoutError) as error:
+                    trial = {"jobs": jobs, "status": "failed", "error": str(error)}
+            else:
+                trial = {"jobs": jobs, "status": "skipped_memory"}
+            parallel.append(trial)
+            report["trials"].append(trial)
     report["recommendation"] = recommend(single, parallel, cfg, train_count)
     if device.type != "cuda":
         report["recommendation"]["reason"] = "CPU benchmark: not an A5000 speed/concurrency estimate"
@@ -330,12 +350,12 @@ def automatic_jobs(cfg):
     device = setup_device(cfg)
     if report.get("hardware") != _hardware(device):
         raise ValueError("Benchmark hardware changed; run benchmark again")
-    if jobs == 2 and device.type == "cuda":
+    if jobs > 1 and device.type == "cuda":
         free, total = torch.cuda.mem_get_info(device)
-        passed = [t for t in report["trials"] if t["status"] == "passed"]
-        needed = max(memory_requirement(t, total / 1024**3) for t in passed)
-        if free / 1024**3 < needed:
-            print("Free VRAM decreased: reducing automatic jobs to 1", flush=True)
-            return 1
+        passed = {t["jobs"]: t for t in report["trials"] if t["status"] == "passed"}
+        while jobs > 1 and free / 1024**3 < memory_requirement(passed[jobs], total / 1024**3):
+            jobs -= 1
+        if jobs != report["recommendation"]["recommended_jobs"]:
+            print(f"Free VRAM decreased: reducing automatic jobs to {jobs}", flush=True)
     print(f"Using benchmark recommendation: jobs={jobs}", flush=True)
     return jobs

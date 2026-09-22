@@ -25,11 +25,11 @@ def parser():
             q.add_argument("--inits", nargs="+", choices=["scratch", "imagenet"], default=["scratch", "imagenet"])
             q.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
         if name == "pipeline":
-            q.add_argument("--jobs", choices=["1", "2", "auto"], default="1")
+            q.add_argument("--jobs", choices=["1", "2", "3", "auto"], default="1")
         if name == "benchmark":
             q.add_argument("--steps", type=int, default=8, help="Measured optimizer updates after warmup; accumulation included")
             q.add_argument("--warmup", type=int, default=2)
-            q.add_argument("--max-jobs", type=int, choices=[1, 2], default=2)
+            q.add_argument("--max-jobs", type=int, choices=[1, 2, 3], default=3)
         if name == "train":
             q.add_argument("--role", choices=["teacher", "student"], default="student")
             q.add_argument("--method", choices=METHODS, default="student")

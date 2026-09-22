@@ -13,7 +13,7 @@
 - Mask invariants: 98 unique tokens, exact10 random swaps, strongest88 retention for low-score rescue, FG feasibility, no FG-label use in fixed random rescue.
 - Data checks: strict category filter considers all annotations, segmentation union decoding, duplicate priority, held-out/probe isolation, file hash integrity.
 - Statistical checks: fixed starting error cohort, censored non-corrections retained, three-epoch threshold, seed pairing rather than image pseudo-replication.
-- Benchmark: actual spawned one- and two-process CPU trials on synthetic data passed for teacher/all seven methods, validation, normal/detailed probes and temporary checkpoint I/O. Temporary files are removed and experiment checkpoints are untouched.
+- Benchmark: actual spawned one-, two- and three-process CPU trials on synthetic data passed for teacher/all seven methods, validation, normal/detailed probes and temporary checkpoint I/O. Temporary files are removed and experiment checkpoints are untouched.
 - Benchmark recommendation tests: accounts for three-seed tail, rejects slower parallel execution, falls back on failed parallel trials, includes teacher/resume/midpoint storage, and rejects incomplete/expired automatic recommendations. CUDA throughput/memory remains unmeasured locally.
 
 **Not yet validated on the server:** CUDA driver/runtime, A5000 peak VRAM/throughput, real COCO image download/QC counts, real training convergence/accuracy. The code includes `check`, `prepare`, `benchmark`, and `pilot` for these steps. No real COCO experiments were run locally.

@@ -4,7 +4,8 @@ import time
 
 import pytest
 
-from coco_kd.benchmark import automatic_jobs, benchmark, memory_requirement, recommend, run_trial
+from coco_kd.benchmark import (automatic_jobs, benchmark, memory_requirement, recommend,
+                               run_trial, time_per_seed)
 from coco_kd.config import Config, METHODS
 from coco_kd.synthetic import synthetic_data
 from coco_kd.system import checkpoint_estimate
@@ -24,16 +25,25 @@ def trial(factor=1):
 
 def test_parallel_recommendation_accounts_for_three_seed_tail_and_contention():
     cfg = Config()
-    fast = recommend(trial(), trial(1.2), cfg, 6000)
+    two = trial(1.2)
+    two["jobs"] = 2
+    fast = recommend(trial(), [two], cfg, 6000)
     assert fast["recommended_jobs"] == 2
     assert fast["full_plan_speedup"] == pytest.approx(3 / 2.2)
     assert fast["aggregate_throughput_speedup"] == pytest.approx(2 / 1.2)
     # Enough VRAM alone must not trigger concurrent training.
-    slow = recommend(trial(), trial(2.1), cfg, 6000)
+    slow_trial = trial(2.1)
+    slow_trial["jobs"] = 2
+    slow = recommend(trial(), [slow_trial], cfg, 6000)
     assert slow["recommended_jobs"] == 1
-    assert slow["parallel_hours"] > slow["serial_hours"]
-    assert recommend(trial(), {"status": "failed"}, cfg, 6000)["recommended_jobs"] == 1
-    assert memory_requirement(trial(), 24) == pytest.approx(7.9)
+    assert slow["candidates"]["2"]["hours"] > slow["serial_hours"]
+    assert recommend(trial(), [{"jobs": 2, "status": "failed"}], cfg, 6000)["recommended_jobs"] == 1
+    assert memory_requirement({**trial(), "jobs": 2}, 24) == pytest.approx(7.9)
+    three = trial(1.4)
+    three["jobs"] = 3
+    fastest = recommend(trial(), [two, three], cfg, 6000)
+    assert fastest["recommended_jobs"] == 3
+    assert fastest["parallel_hours"] == pytest.approx(time_per_seed(three, cfg, 6000)["total_seconds"] / 3600)
 
 
 def test_storage_estimate_includes_resume_teacher_and_midpoint():
@@ -61,6 +71,9 @@ def test_real_spawned_single_and_dual_benchmark_and_auto_guards(tmp_path):
     assert len(dual["rows"]) == 16
     assert {r["rank"] for r in dual["rows"]} == {0, 1}
     assert all(r["seconds"] > 0 for r in dual["rows"])
+    triple = run_trial(cfg, 3, warmup=1, steps=1)
+    assert len(triple["rows"]) == 24
+    assert {r["rank"] for r in triple["rows"]} == {0, 1, 2}
     assert not list((tmp_path / "out/_benchmark").iterdir())
     assert not list((tmp_path / "out").glob("seed_*"))
     stale = copy.deepcopy(report)
