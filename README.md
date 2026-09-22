@@ -48,7 +48,7 @@ bash setup.sh run
 
 동시 실행은 기본 1개다. `benchmark`는 teacher와 7개 방법을 각각 **warmup 2 optimizer updates + 측정 8 updates**(update당 microbatch 4개)로 실행한다. 실제 데이터 로딩, accumulation, 대표 validation·매 epoch probe·상세 probe·checkpoint 쓰기까지 측정한다. 무작위 초기화된 임시 모델을 사용하며 실험 가중치를 덮어쓰지 않는다.
 
-단독 실행에서 teacher와 7개 방법의 비용을 측정한 뒤, VRAM 여유가 충분한 범위에서 대표 student 조건을 2개부터 최대 7개까지 동시에 실행한다. **Teacher 3개를 먼저 만들고 42개 student 조건을 공용 작업 큐로 처리하는 실제 스케줄**의 완료 시간을 계산해, 10% 이상 단축되는 가장 빠른 작업 수를 권장한다. 여유 메모리는 프로세스당 추가 0.75GiB와 GPU 전체의 10%(최소 2GiB)를 보수적으로 확보한다. 상한을 낮추려면 예를 들어 `bash setup.sh benchmark --max-jobs 4`를 사용한다.
+단독 실행에서 teacher와 7개 방법의 비용을 측정한 뒤, VRAM 여유가 충분한 범위에서 대표 student 조건을 2개부터 최대 7개까지 동시에 실행한다. **Teacher 3개를 먼저 만들고 42개 student 조건을 공용 작업 큐로 처리하는 실제 스케줄**의 완료 시간을 계산해, 10% 이상 단축되는 가장 빠른 작업 수를 권장한다. 여유 메모리는 프로세스당 추가 0.75GiB와 GPU 전체의 10%(최소 2GiB)를 보수적으로 확보한다. 상한을 낮추려면 예를 들어 `bash setup.sh benchmark --max-jobs 4`를 사용한다. 벤치와 2개 이상 병렬 학습은 이미 학습 프로세스 자체가 병렬이므로 중첩 DataLoader 프로세스를 만들지 않고 각 프로세스가 직접 데이터를 읽는다(`num_workers=0`). 단독 학습은 설정값 2를 유지한다.
 
 `outputs/experiment2/benchmark.json`에 방법별 처리량·VRAM, 단독/병렬 예상 시간, 권장 작업 수, checkpoint/probe 용량을 저장한다. **전체 42개 student + teacher 3개를 처음부터 실행할 때의 추정**이며, 이미 완료한 pilot을 뺀 잔여 시간은 아니다. 원시 예측에 1.5배 여유를 둔 계획 범위를 함께 출력하며 통계적 신뢰구간은 아니다. 설치·다운로드·최종 test/export는 별도다.
 

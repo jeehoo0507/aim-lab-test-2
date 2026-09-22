@@ -57,10 +57,14 @@ def pipeline(cfg, args):
         args.jobs = int(args.jobs)
     directory = Path(cfg.output_root) / "_jobs"
     directory.mkdir(parents=True, exist_ok=True)
+    # Each concurrent training task is already a separate process. Avoid nesting
+    # DataLoader subprocesses, which can exhaust shared memory and abort workers.
+    task_cfg = replace(cfg, num_workers=0) if args.jobs > 1 else cfg
+    print(f"Parallel jobs={args.jobs}; DataLoader workers per training process={task_cfg.num_workers}", flush=True)
     config_paths = {}
     for seed in args.seeds:
         config_paths[seed] = directory / f"seed_{seed}.json"
-        write_json(config_paths[seed], cfg.to_dict())
+        write_json(config_paths[seed], task_cfg.to_dict())
 
     def run_task(task):
         seed, role, method, initialization = task

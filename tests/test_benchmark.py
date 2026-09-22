@@ -64,6 +64,8 @@ def test_real_spawned_single_and_dual_benchmark_and_auto_guards(tmp_path):
                       diagnostic_epochs=[0, 2])
     destination = tmp_path / "out/benchmark.json"
     report = benchmark(cfg, destination, steps=1, warmup=1, max_jobs=1)
+    assert report["schema"] == 3
+    assert report["trials"][0]["dataloader_workers_per_process"] == 0
     assert len(report["trials"][0]["rows"]) == 8
     assert automatic_jobs(cfg) == 1
     assert report["estimated_probe_validation_gib"] > 0

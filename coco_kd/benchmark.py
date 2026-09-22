@@ -1,5 +1,6 @@
 """Measure one/two independent processes on the same GPU with real prepared data."""
 import gc
+from dataclasses import replace
 import json
 import multiprocessing as mp
 import os
@@ -36,7 +37,10 @@ def _hardware(device):
 
 def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
     try:
-        cfg = Config.load(**values)
+        # A benchmark worker is already a spawned process. Nested DataLoader
+        # subprocesses are unstable under multi-job CUDA runs and multiply shared
+        # memory use, so each benchmark process reads its own batches directly.
+        cfg = replace(Config.load(**values), num_workers=0)
         seed_all(9123 + rank)
         device = setup_device(cfg)
         train_data = CocoSubset(cfg.data_root, "train", train=True, threshold=cfg.foreground_threshold)
@@ -111,7 +115,6 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
                 (work / "last.pt").unlink()
                 barrier.wait(timeout=180)
             if method == "student":
-                from dataclasses import replace
                 probe = Probe(replace(cfg, epochs=1000000, diagnostic_epochs=[]), work, teacher, device)
                 probe.log(model, 1, "student")  # Populate full-teacher cache before timing.
                 _sync(device)
@@ -181,6 +184,7 @@ def run_trial(cfg, jobs, warmup=2, steps=8, modes=("teacher", *METHODS)):
             for worker in workers:
                 worker.join(timeout=10)
             return {"jobs": jobs, "profile": "all" if len(modes) > 1 else modes[0],
+                    "dataloader_workers_per_process": 0,
                     "status": "passed", "rows": rows}
         finally:
             for worker in workers:
@@ -277,13 +281,13 @@ def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=7):
     manifest = validate_manifest(cfg.data_root)
     device = setup_device(cfg)
     train_count = sum(r["split"] == "train" for r in manifest["images"])
-    report = {"schema": 2, "config": cfg.to_dict(), "metadata_sha256": metadata_hash(cfg),
+    report = {"schema": 3, "config": cfg.to_dict(), "metadata_sha256": metadata_hash(cfg),
               "code_sha256": source_fingerprint(), "measured_at_unix": time.time(),
               "device": str(device), "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
               "hardware": _hardware(device),
               "warmup_updates": warmup, "measured_updates": steps,
               "training_images": train_count, "trials": [],
-              "note": "Random weights, real prepared images. Temporary checkpoints. Data loading, accumulation and representative validation/probe/I/O included."}
+              "note": "Random weights, real prepared images. Temporary checkpoints. Data loading, accumulation and representative validation/probe/I/O included. Each spawned benchmark process loads synchronously (num_workers=0) to avoid nested multiprocessing."}
     print("Benchmark: real images + model sizes; experiment checkpoints are untouched", flush=True)
     single = run_trial(cfg, 1, warmup, steps)
     report["trials"].append(single)
@@ -352,7 +356,7 @@ def automatic_jobs(cfg):
     if not path.exists():
         raise ValueError("Run bash setup.sh benchmark before --jobs auto")
     report = json.loads(path.read_text())
-    if report.get("schema") != 2 or report.get("metadata_sha256") != metadata_hash(cfg) or report.get("code_sha256") != source_fingerprint():
+    if report.get("schema") != 3 or report.get("metadata_sha256") != metadata_hash(cfg) or report.get("code_sha256") != source_fingerprint():
         raise ValueError("Benchmark data/code changed; run benchmark again")
     if "recommendation" not in report:
         raise ValueError("Benchmark did not finish; run benchmark again")
