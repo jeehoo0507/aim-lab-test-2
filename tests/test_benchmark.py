@@ -59,7 +59,7 @@ def test_real_spawned_single_and_dual_benchmark_and_auto_guards(tmp_path):
     synthetic_data(tmp_path / "data")
     cfg = Config.load(data_root=str(tmp_path / "data"), output_root=str(tmp_path / "out"),
                       num_classes=2, device="cpu", model_scale="debug", student_init="scratch",
-                      teacher_pretrained=False, num_workers=0, batch_size=2, eval_batch_size=2,
+                      teacher_pretrained=False, num_workers=2, batch_size=2, eval_batch_size=2,
                       accumulation_steps=2, epochs=2, teacher_epochs=2, diagnostic_repeats=1,
                       diagnostic_epochs=[0, 2])
     destination = tmp_path / "out/benchmark.json"
