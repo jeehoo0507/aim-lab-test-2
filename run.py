@@ -77,8 +77,11 @@ def pipeline(cfg, args):
             print(f"DONE seed={seed} {role} {initialization} {method}; log={log}", flush=True)
 
     teachers = [(seed, "teacher", "student", "imagenet") for seed in args.seeds]
-    students = [(seed, "student", method, initialization) for initialization in args.inits
-                for method in args.methods for seed in args.seeds]
+    # Keep each seed/initialization's seven methods adjacent. With jobs=7 the first
+    # wave is therefore a directly paired, same-seed comparison; completed slots
+    # immediately take the next queued condition.
+    students = [(seed, "student", method, initialization) for seed in args.seeds
+                for initialization in args.inits for method in args.methods]
     # Teacher checkpoints are prerequisites. Once frozen, every student condition is independent.
     with ThreadPoolExecutor(max_workers=min(args.jobs, len(teachers))) as pool:
         list(pool.map(run_task, teachers))
