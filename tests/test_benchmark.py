@@ -29,8 +29,8 @@ def test_parallel_recommendation_accounts_for_three_seed_tail_and_contention():
     two["jobs"] = 2
     fast = recommend(trial(), [two], cfg, 6000)
     assert fast["recommended_jobs"] == 2
-    assert fast["full_plan_speedup"] == pytest.approx(3 / 2.2)
-    assert fast["aggregate_throughput_speedup"] == pytest.approx(2 / 1.2)
+    assert fast["candidates"]["2"]["student_task_slowdown"] == pytest.approx(1.2)
+    assert fast["aggregate_student_throughput_speedup"] == pytest.approx(2 / 1.2)
     # Enough VRAM alone must not trigger concurrent training.
     slow_trial = trial(2.1)
     slow_trial["jobs"] = 2
@@ -43,7 +43,9 @@ def test_parallel_recommendation_accounts_for_three_seed_tail_and_contention():
     three["jobs"] = 3
     fastest = recommend(trial(), [two, three], cfg, 6000)
     assert fastest["recommended_jobs"] == 3
-    assert fastest["parallel_hours"] == pytest.approx(time_per_seed(three, cfg, 6000)["total_seconds"] / 3600)
+    one = time_per_seed(trial(), cfg, 6000)
+    expected = one["teacher_seconds"] + one["student_seconds"] * 1.4
+    assert fastest["parallel_hours"] == pytest.approx(expected / 3600)
 
 
 def test_storage_estimate_includes_resume_teacher_and_midpoint():

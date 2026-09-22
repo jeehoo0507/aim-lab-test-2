@@ -34,7 +34,7 @@ def _hardware(device):
             "uuid": str(getattr(p, "uuid", "unavailable"))}
 
 
-def _worker(values, rank, barrier, queue, directory, warmup, steps):
+def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
     try:
         cfg = Config.load(**values)
         seed_all(9123 + rank)
@@ -44,7 +44,7 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps):
         work = Path(directory) / f"worker_{rank}"
         work.mkdir()
         rows = []
-        for method in ("teacher", *METHODS):
+        for method in modes:
             role = "teacher" if method == "teacher" else "student"
             model = build_model(role, cfg).to(device)
             teacher = build_model("teacher", cfg).to(device).requires_grad_(False).eval() if role == "student" else None
@@ -148,13 +148,13 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps):
             pass
 
 
-def run_trial(cfg, jobs, warmup=2, steps=8):
+def run_trial(cfg, jobs, warmup=2, steps=8, modes=("teacher", *METHODS)):
     context = mp.get_context("spawn")
     barrier, queue = context.Barrier(jobs), context.Queue()
     base = Path(cfg.output_root) / "_benchmark"
     base.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=f"jobs{jobs}_", dir=base) as directory:
-        workers = [context.Process(target=_worker, args=(cfg.to_dict(), rank, barrier, queue, directory, warmup, steps))
+        workers = [context.Process(target=_worker, args=(cfg.to_dict(), rank, barrier, queue, directory, warmup, steps, modes))
                    for rank in range(jobs)]
         rows, done = [], set()
         try:
@@ -180,7 +180,8 @@ def run_trial(cfg, jobs, warmup=2, steps=8):
                     print(f"BENCH jobs={jobs}: {message['method']} worker={message['rank']} complete", flush=True)
             for worker in workers:
                 worker.join(timeout=10)
-            return {"jobs": jobs, "status": "passed", "rows": rows}
+            return {"jobs": jobs, "profile": "all" if len(modes) > 1 else modes[0],
+                    "status": "passed", "rows": rows}
         finally:
             for worker in workers:
                 if worker.is_alive():
@@ -213,6 +214,18 @@ def time_per_seed(trial, cfg, train_count):
             "train_epoch_seconds_by_method": train_time}
 
 
+def student_task_seconds(trial, cfg, train_count):
+    rows = trial["rows"]
+    train = train_count * max(r["seconds"] / r["samples"] for r in rows if r["method"] == "student")
+    validation = _worst(rows, "student", "validation_seconds")
+    checkpoint = _worst(rows, "student", "checkpoint_seconds")
+    normal = _worst(rows, "student", "probe_seconds")
+    detailed = _worst(rows, "student", "diagnostic_seconds")
+    n_detail = len(set(e for e in cfg.diagnostic_epochs if 0 <= e <= cfg.epochs) | {0, cfg.epochs}) + 1
+    return (cfg.epochs * (train + validation + checkpoint + normal) + 2 * normal
+            + n_detail * max(0, detailed - normal))
+
+
 def recommend(single, parallel_trials, cfg, train_count, seeds=3):
     one = time_per_seed(single, cfg, train_count)
     result = {"recommended_jobs": 1, "serial_hours": seeds * one["total_seconds"] / 3600,
@@ -221,24 +234,28 @@ def recommend(single, parallel_trials, cfg, train_count, seeds=3):
     times = {1: one}
     for trial in parallel_trials:
         if trial["status"] == "passed":
-            times[trial["jobs"]] = time_per_seed(trial, cfg, train_count)
+            times[trial["jobs"]] = trial
     best_hours = result["serial_hours"]
-    for jobs, measured in sorted(times.items()):
+    single_task = student_task_seconds(single, cfg, train_count)
+    average_task = one["student_seconds"] / (len(METHODS) * 2)
+    total_student_tasks = seeds * len(METHODS) * 2
+    for jobs, trial in sorted(times.items()):
         if jobs == 1:
             continue
-        batches, remainder = divmod(seeds, jobs)
-        duration = batches * measured["total_seconds"]
-        if remainder:
-            duration += times[remainder]["total_seconds"]
+        slowdown = student_task_seconds(trial, cfg, train_count) / single_task
+        teacher_workers = min(jobs, seeds)
+        duration = ((seeds + teacher_workers - 1) // teacher_workers) * one["teacher_seconds"]
+        duration += ((total_student_tasks + jobs - 1) // jobs) * average_task * slowdown
         hours = duration / 3600
         candidate = {"hours": hours,
-                     "aggregate_throughput_speedup": jobs * one["total_seconds"] / measured["total_seconds"],
+                     "student_task_slowdown": slowdown,
+                     "aggregate_student_throughput_speedup": jobs / slowdown,
                      "full_plan_speedup": result["serial_hours"] / hours}
         result["candidates"][str(jobs)] = candidate
         if candidate["full_plan_speedup"] >= 1.10 and hours < best_hours:
             best_hours = hours
             result.update(recommended_jobs=jobs, parallel_hours=hours,
-                          aggregate_throughput_speedup=candidate["aggregate_throughput_speedup"],
+                          aggregate_student_throughput_speedup=candidate["aggregate_student_throughput_speedup"],
                           full_plan_speedup=candidate["full_plan_speedup"],
                           reason="Fastest measured full-plan time with >=10% improvement and VRAM headroom")
     if result["recommended_jobs"] == 1 and times.keys() != {1}:
@@ -254,9 +271,9 @@ def memory_requirement(trial, total_gib):
     return trial["jobs"] * per_worker + max(2.0, .1 * total_gib)
 
 
-def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=3):
-    if steps < 1 or warmup < 1 or max_jobs not in (1, 2, 3):
-        raise ValueError("Positive warmup/steps and max_jobs 1, 2 or 3 required")
+def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=7):
+    if steps < 1 or warmup < 1 or max_jobs not in range(1, 8):
+        raise ValueError("Positive warmup/steps and max_jobs from 1 through 7 required")
     manifest = validate_manifest(cfg.data_root)
     device = setup_device(cfg)
     train_count = sum(r["split"] == "train" for r in manifest["images"])
@@ -276,7 +293,8 @@ def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=3):
         free, total = torch.cuda.mem_get_info(device)
         report["required_free_gib_by_jobs"] = {}
         report["free_gib_before_parallel"] = free / 1024**3
-        per_worker = max(r["peak_reserved_gib"] for r in single["rows"]) + .75
+        student_peak = max(r["peak_reserved_gib"] for r in single["rows"] if r["method"] != "teacher")
+        per_worker = student_peak + .75
         margin = max(2.0, .1 * total / 1024**3)
         for jobs in range(2, max_jobs + 1):
             needed = jobs * per_worker + margin
@@ -284,7 +302,7 @@ def benchmark(cfg, destination, steps=8, warmup=2, max_jobs=3):
             if free / 1024**3 >= needed:
                 print(f"Enough VRAM headroom; comparing {jobs} concurrent workers", flush=True)
                 try:
-                    trial = run_trial(cfg, jobs, warmup, steps)
+                    trial = run_trial(cfg, jobs, warmup, steps, modes=("student",))
                     if memory_requirement(trial, total / 1024**3) > free / 1024**3:
                         trial["status"] = "insufficient_headroom"
                 except (RuntimeError, TimeoutError) as error:
@@ -353,7 +371,12 @@ def automatic_jobs(cfg):
     if jobs > 1 and device.type == "cuda":
         free, total = torch.cuda.mem_get_info(device)
         passed = {t["jobs"]: t for t in report["trials"] if t["status"] == "passed"}
-        while jobs > 1 and free / 1024**3 < memory_requirement(passed[jobs], total / 1024**3):
+        required = report.get("required_free_gib_by_jobs", {})
+        def needed(candidate):
+            if str(candidate) in required:
+                return required[str(candidate)]
+            return memory_requirement(passed[candidate], total / 1024**3)
+        while jobs > 1 and free / 1024**3 < needed(jobs):
             jobs -= 1
         if jobs != report["recommendation"]["recommended_jobs"]:
             print(f"Free VRAM decreased: reducing automatic jobs to {jobs}", flush=True)

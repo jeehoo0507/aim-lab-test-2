@@ -25,11 +25,11 @@ def parser():
             q.add_argument("--inits", nargs="+", choices=["scratch", "imagenet"], default=["scratch", "imagenet"])
             q.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
         if name == "pipeline":
-            q.add_argument("--jobs", choices=["1", "2", "3", "auto"], default="1")
+            q.add_argument("--jobs", choices=["1", "2", "3", "4", "5", "6", "7", "auto"], default="1")
         if name == "benchmark":
             q.add_argument("--steps", type=int, default=8, help="Measured optimizer updates after warmup; accumulation included")
             q.add_argument("--warmup", type=int, default=2)
-            q.add_argument("--max-jobs", type=int, choices=[1, 2, 3], default=3)
+            q.add_argument("--max-jobs", type=int, choices=range(1, 8), default=7)
         if name == "train":
             q.add_argument("--role", choices=["teacher", "student"], default="student")
             q.add_argument("--method", choices=METHODS, default="student")
@@ -55,28 +55,35 @@ def pipeline(cfg, args):
         args.jobs = automatic_jobs(cfg)
     else:
         args.jobs = int(args.jobs)
-    # One job owns one seed, so teacher is never trained twice for different student initializations.
-    def run_seed(seed):
-        commands = [("teacher", "student", "imagenet")]
-        commands += [("student", method, initialization) for initialization in args.inits for method in args.methods]
-        for role, method, initialization in commands:
-            if args.jobs == 1:
-                train(replace(cfg, seed=seed, student_init=initialization), role=role, method=method)
-            else:
-                directory = Path(cfg.output_root) / "_jobs"
-                directory.mkdir(parents=True, exist_ok=True)
-                config_path = directory / f"seed_{seed}.json"
-                write_json(config_path, cfg.to_dict())
-                env = dict(os.environ, OMP_NUM_THREADS=str(cfg.num_threads), MKL_NUM_THREADS=str(cfg.num_threads))
-                log = Path("logs") / f"seed_{seed}_{initialization}_{role}_{method}.log"
-                log.parent.mkdir(exist_ok=True)
-                with open(log, "a", buffering=1) as file:
-                    subprocess.run([sys.executable, "-u", str(Path(__file__).resolve()), "train", "--config", str(config_path),
-                                    "--role", role, "--method", method, "--seed", str(seed), "--init", initialization],
-                                   check=True, stdout=file, stderr=subprocess.STDOUT, env=env)
-                print(f"DONE seed={seed} {role} {initialization} {method}; log={log}", flush=True)
-    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        list(pool.map(run_seed, args.seeds))
+    directory = Path(cfg.output_root) / "_jobs"
+    directory.mkdir(parents=True, exist_ok=True)
+    config_paths = {}
+    for seed in args.seeds:
+        config_paths[seed] = directory / f"seed_{seed}.json"
+        write_json(config_paths[seed], cfg.to_dict())
+
+    def run_task(task):
+        seed, role, method, initialization = task
+        if args.jobs == 1:
+            train(replace(cfg, seed=seed, student_init=initialization), role=role, method=method)
+        else:
+            env = dict(os.environ, OMP_NUM_THREADS=str(cfg.num_threads), MKL_NUM_THREADS=str(cfg.num_threads))
+            log = Path("logs") / f"seed_{seed}_{initialization}_{role}_{method}.log"
+            log.parent.mkdir(exist_ok=True)
+            with open(log, "a", buffering=1) as file:
+                subprocess.run([sys.executable, "-u", str(Path(__file__).resolve()), "train", "--config", str(config_paths[seed]),
+                                "--role", role, "--method", method, "--seed", str(seed), "--init", initialization],
+                               check=True, stdout=file, stderr=subprocess.STDOUT, env=env)
+            print(f"DONE seed={seed} {role} {initialization} {method}; log={log}", flush=True)
+
+    teachers = [(seed, "teacher", "student", "imagenet") for seed in args.seeds]
+    students = [(seed, "student", method, initialization) for initialization in args.inits
+                for method in args.methods for seed in args.seeds]
+    # Teacher checkpoints are prerequisites. Once frozen, every student condition is independent.
+    with ThreadPoolExecutor(max_workers=min(args.jobs, len(teachers))) as pool:
+        list(pool.map(run_task, teachers))
+    with ThreadPoolExecutor(max_workers=min(args.jobs, len(students))) as pool:
+        list(pool.map(run_task, students))
     from coco_kd.analysis import analyze
     analyze(cfg.output_root)
     print("Training complete. Run evaluate after freezing the protocol, then export --push.")
