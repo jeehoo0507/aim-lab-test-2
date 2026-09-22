@@ -1,0 +1,400 @@
+{
+  "schema": 2,
+  "config": {
+    "data_root": "data/coco_single",
+    "output_root": "outputs/experiment2",
+    "device": "cuda",
+    "num_classes": 10,
+    "batch_size": 32,
+    "eval_batch_size": 32,
+    "accumulation_steps": 4,
+    "num_workers": 2,
+    "num_threads": 2,
+    "epochs": 100,
+    "teacher_epochs": 30,
+    "seed": 0,
+    "scratch_lr": 0.0005,
+    "pretrained_lr": 5e-05,
+    "teacher_lr": 5e-05,
+    "min_lr": 1e-06,
+    "warmup_epochs": 5,
+    "weight_decay": 0.05,
+    "drop_path": 0.1,
+    "label_smoothing": 0.1,
+    "kd_alpha": 0.5,
+    "temperature": 1.0,
+    "keep_tokens": 98,
+    "foreground_threshold": 0.5,
+    "checkpoint_every": 50,
+    "checkpoint_target_gb": 5.0,
+    "output_warning_gb": 10.0,
+    "diagnostic_epochs": [
+      0,
+      10,
+      25,
+      50,
+      75,
+      100
+    ],
+    "diagnostic_repeats": 5,
+    "student_init": "imagenet",
+    "teacher_pretrained": true,
+    "amp": true,
+    "grad_clip": 1.0,
+    "model_scale": "deit",
+    "max_train_batches": null
+  },
+  "metadata_sha256": "ffbd7a44425184e36efc3f51821cb1fb7126d5fea1dbfeaf0c3229a90528e62e",
+  "code_sha256": "2ea85e2003c012bfeecffa1106a627c256a5524051724632a8427f3ee979855a",
+  "measured_at_unix": 1790040261.6222005,
+  "device": "cuda:0",
+  "cuda_visible_devices": null,
+  "hardware": {
+    "device": "cuda:0",
+    "name": "NVIDIA RTX A5000",
+    "total_bytes": 25278021632,
+    "uuid": "4cb616e2-1b9c-36b1-e595-e6ed8b44d8c8"
+  },
+  "warmup_updates": 2,
+  "measured_updates": 8,
+  "training_images": 6000,
+  "trials": [
+    {
+      "jobs": 1,
+      "status": "passed",
+      "rows": [
+        {
+          "method": "teacher",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.668793190037832,
+          "images_per_second": 153.55102052492813,
+          "validation_seconds": 14.094279404962435,
+          "validation_bytes": 28489,
+          "checkpoint_seconds": 0.5671195001341403,
+          "checkpoint_bytes": 346889614,
+          "peak_reserved_gib": 2.109375,
+          "peak_allocated_gib": 1.9566521644592285
+        },
+        {
+          "method": "ce",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.638669865904376,
+          "images_per_second": 154.24776659842266,
+          "peak_reserved_gib": 1.166015625,
+          "peak_allocated_gib": 0.9958429336547852
+        },
+        {
+          "method": "full",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.707756862975657,
+          "images_per_second": 152.6590812574174,
+          "peak_reserved_gib": 1.310546875,
+          "peak_allocated_gib": 1.0932421684265137
+        },
+        {
+          "method": "random",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.609673597151414,
+          "images_per_second": 154.92444293184397,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "student",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.65090800402686,
+          "images_per_second": 153.96393986806143,
+          "validation_seconds": 13.973651493899524,
+          "validation_bytes": 28637,
+          "checkpoint_seconds": 0.17187255690805614,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 8.763365796068683,
+          "probe_bytes": 348381,
+          "diagnostic_seconds": 13.68525981507264,
+          "diagnostic_bytes": 866352,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "random_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.546122493920848,
+          "images_per_second": 156.42848128047598,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "foreground_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.709267146885395,
+          "images_per_second": 152.62471706397406,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "low_score_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.600424181902781,
+          "images_per_second": 155.14154420675425,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        }
+      ]
+    },
+    {
+      "jobs": 2,
+      "status": "passed",
+      "rows": [
+        {
+          "method": "teacher",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.737193844048306,
+          "images_per_second": 151.9920643079923,
+          "validation_seconds": 14.080730096902698,
+          "validation_bytes": 28735,
+          "checkpoint_seconds": 1.2775339588988572,
+          "checkpoint_bytes": 346889614,
+          "peak_reserved_gib": 2.109375,
+          "peak_allocated_gib": 1.9566521644592285
+        },
+        {
+          "method": "ce",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.962323129875585,
+          "images_per_second": 147.0773448600767,
+          "peak_reserved_gib": 1.166015625,
+          "peak_allocated_gib": 0.9958429336547852
+        },
+        {
+          "method": "full",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.792933783959597,
+          "images_per_second": 150.74488175021057,
+          "peak_reserved_gib": 1.310546875,
+          "peak_allocated_gib": 1.0932421684265137
+        },
+        {
+          "method": "random",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.579303710954264,
+          "images_per_second": 155.63956992821036,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "student",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.652795953908935,
+          "images_per_second": 153.92024753116556,
+          "validation_seconds": 14.127701403805986,
+          "validation_bytes": 28235,
+          "checkpoint_seconds": 0.17225985182449222,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 8.865585244027898,
+          "probe_bytes": 347418,
+          "diagnostic_seconds": 15.920258957892656,
+          "diagnostic_bytes": 865836,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "random_rescue_10",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.933368619065732,
+          "images_per_second": 147.69155604739555,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "foreground_rescue_10",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.784885787870735,
+          "images_per_second": 150.9236900981581,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "low_score_rescue_10",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.834486115025356,
+          "images_per_second": 149.82838252444103,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "teacher",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 7.073515129974112,
+          "images_per_second": 144.76536505319496,
+          "validation_seconds": 14.075685875024647,
+          "validation_bytes": 28489,
+          "checkpoint_seconds": 1.2604036470875144,
+          "checkpoint_bytes": 346889614,
+          "peak_reserved_gib": 2.109375,
+          "peak_allocated_gib": 1.9566521644592285
+        },
+        {
+          "method": "ce",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.695386423030868,
+          "images_per_second": 152.94113517893948,
+          "peak_reserved_gib": 1.166015625,
+          "peak_allocated_gib": 0.9958429336547852
+        },
+        {
+          "method": "full",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.8016122709959745,
+          "images_per_second": 150.55253948635527,
+          "peak_reserved_gib": 1.310546875,
+          "peak_allocated_gib": 1.0932421684265137
+        },
+        {
+          "method": "random",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.8437511110678315,
+          "images_per_second": 149.62554648487577,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "student",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.7093259720131755,
+          "images_per_second": 152.62337890146398,
+          "validation_seconds": 14.13354291790165,
+          "validation_bytes": 28637,
+          "checkpoint_seconds": 0.16944478289224207,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 8.852448725840077,
+          "probe_bytes": 348381,
+          "diagnostic_seconds": 16.126234606839716,
+          "diagnostic_bytes": 866352,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "random_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.811755834845826,
+          "images_per_second": 150.32834776045325,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "foreground_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.626940849935636,
+          "images_per_second": 154.52076956593714,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        },
+        {
+          "method": "low_score_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 6.736776784993708,
+          "images_per_second": 152.0014738028694,
+          "peak_reserved_gib": 1.216796875,
+          "peak_allocated_gib": 1.0183568000793457
+        }
+      ]
+    }
+  ],
+  "note": "Random weights, real prepared images. Temporary checkpoints. Data loading, accumulation and representative validation/probe/I/O included.",
+  "parallel_required_free_gib": 8.07294921875,
+  "free_gib_before_parallel": 18.5264892578125,
+  "recommendation": {
+    "recommended_jobs": 2,
+    "serial_hours": 74.05073010178545,
+    "one_seed": {
+      "teacher_seconds": 1612.0907700892349,
+      "student_seconds": 87248.7853520533,
+      "total_seconds": 88860.87612214254,
+      "train_epoch_seconds_by_method": {
+        "teacher": 39.07496009787792,
+        "ce": 38.89845624553345,
+        "full": 39.30326286899799,
+        "random": 38.728556233309064,
+        "student": 38.97016408609488,
+        "random_rescue_10": 38.35618648781747,
+        "foreground_rescue_10": 39.31211218878161,
+        "low_score_rescue_10": 38.67436044083661
+      }
+    },
+    "reason": "Projected full-plan time improves >=10%, with VRAM headroom",
+    "parallel_hours": 50.01725150630757,
+    "aggregate_throughput_speedup": 1.9486771571749482,
+    "full_plan_speedup": 1.4805037836284758,
+    "planning_range_hours": [
+      50.01725150630757,
+      75.02587725946137
+    ],
+    "excludes": "download, initial environment setup, final test/export; full 42-student/3-teacher plan, not remaining work"
+  },
+  "checkpoint_storage": {
+    "student_gib": 2.5939926356077194,
+    "teacher_gib": 0.48435138165950775,
+    "maskedkd_midpoint_gib": 0.4940938353538513,
+    "total_gib": 3.5724378526210785,
+    "total_decimal_gb": 3.835875936,
+    "target_decimal_gb": 5.0,
+    "within_target": true,
+    "excludes": "data, environments/caches, probes/validation, analysis/export; approximate completed-run tensor bytes"
+  },
+  "estimated_probe_validation_gib": 1.7415835540741682,
+  "storage_budget": {
+    "estimated_output_decimal_gb": 5.955887038,
+    "recommended_decimal_gb": 5.0,
+    "warning_decimal_gb": 10.0,
+    "above_warning": false,
+    "note": "Includes checkpoints, measured probe/validation projection and 0.25GB metadata/analysis allowance; excludes data and environment/cache."
+  }
+}
