@@ -55,6 +55,17 @@ def pipeline(cfg, args):
         args.jobs = automatic_jobs(cfg)
     else:
         args.jobs = int(args.jobs)
+    # Populate each upstream checkpoint once before concurrent processes start.
+    # This avoids multiple workers downloading/renaming the same cache file.
+    from coco_kd.models import build_model
+    if cfg.teacher_pretrained:
+        print("Preparing cached ImageNet teacher weights", flush=True)
+        model = build_model("teacher", cfg, pretrained=True)
+        del model
+    if "imagenet" in args.inits:
+        print("Preparing cached ImageNet student weights", flush=True)
+        model = build_model("student", cfg, pretrained=True)
+        del model
     directory = Path(cfg.output_root) / "_jobs"
     directory.mkdir(parents=True, exist_ok=True)
     # Each concurrent training task is already a separate process. Avoid nesting
