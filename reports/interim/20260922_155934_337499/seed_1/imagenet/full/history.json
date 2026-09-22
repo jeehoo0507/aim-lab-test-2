@@ -1,0 +1,38 @@
+[
+  {
+    "epoch": 1,
+    "lr": 1e-05,
+    "train": {
+      "loss": 1.78274942111969,
+      "ce": 2.019601791381836,
+      "kd": 1.545897050857544,
+      "swaps": 0.0,
+      "added_foreground": 0.0,
+      "removed_foreground": 0.0,
+      "correct": 0.389,
+      "samples": 6000,
+      "optimizer_updates": 47,
+      "amp_skipped_updates": 0,
+      "seconds": 95.543360323878
+    },
+    "validation": {
+      "accuracy": 0.725,
+      "macro_accuracy": 0.7250000000000001,
+      "per_class_accuracy": [
+        0.92,
+        0.48,
+        0.69,
+        0.94,
+        0.87,
+        0.39,
+        0.78,
+        0.83,
+        0.65,
+        0.7
+      ],
+      "samples": 1000
+    },
+    "epoch_seconds_with_probe": 111.46069495403208,
+    "peak_allocated_gib": 1.092212200164795
+  }
+]
