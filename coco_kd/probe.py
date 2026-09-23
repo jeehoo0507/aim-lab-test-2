@@ -23,16 +23,17 @@ class Probe:
                    "diagnostic_repeats": cfg.diagnostic_repeats,
                    "randomness": "independent image/method/repeat streams, fixed across epochs and training seeds"})
 
-    def choose(self, attention, method, foreground, ids, repeat=0):
+    def choose(self, attention, method, foreground, ids, repeat=0, epoch=None):
         if method in ("ce", "full"):
             return torch.arange(196, device=self.device).expand(len(ids), -1), torch.zeros(len(ids), device=self.device, dtype=torch.long)
         chosen, counts = [], []
-        index = DIAGNOSTICS.index(method)
+        # Match the original Random-10 stream at the start of the schedule.
+        index = DIAGNOSTICS.index("random_rescue_10" if method == "random_anneal_10" else method)
         for i, sample_id in enumerate(ids):
             # Stable across batch size, epoch, initialization and training seed.
             seed = int(sample_id) * 1009 + 10000019 * index + 65537 * repeat
             generator = torch.Generator(device=self.device).manual_seed(seed)
-            idx, swaps = select_tokens(attention[i:i + 1], method, foreground=foreground[i:i + 1], generator=generator)
+            idx, swaps = select_tokens(attention[i:i + 1], method, foreground=foreground[i:i + 1], generator=generator, epoch=epoch)
             chosen.append(idx)
             counts.append(swaps)
         return torch.cat(chosen), torch.cat(counts)
@@ -54,7 +55,7 @@ class Probe:
                     full = self.full_cache[0][offset:offset + len(x)]
                     teacher_attention = self.full_cache[1][offset:offset + len(x)]
                 raw, _ = select_tokens(attention, "student")
-                actual, swaps = self.choose(attention, method, fg, batch["sample_id"])
+                actual, swaps = self.choose(attention, method, fg, batch["sample_id"], epoch=epoch)
                 raw_logits = self.teacher(x, raw).float().cpu().numpy()
                 actual_logits = full if method in ("ce", "full") else self.teacher(x, actual).float().cpu().numpy()
             row = {key: batch[key].numpy() for key in ("sample_id", "label", "foreground", "coverage")}

@@ -6,6 +6,8 @@ Waterbirds 실험 1과 별도 저장소다. **코드와 실행 절차를 준비�
 
 [최종 실험 설계](docs/EXPERIMENT_2.md) · [저장 자료와 해석](docs/ARTIFACTS.md)
 
+추가 비교: [Random 10→0 vs MaskedKD 실행 안내](docs/RANDOM_ANNEAL.md). `bash setup.sh anneal --jobs 4`로 기존 teacher를 재사용하여 seed 0의 두 초기화·두 방법만 별도 경로에서 학습·평가한다. 완료 후 `bash setup.sh anneal-export --push`로 결과를 공유한다.
+
 ## 구성
 
 - COCO 2017: 이미지에 주석된 객체 종류가 하나인 10클래스. 같은 종류의 여러 객체는 허용.

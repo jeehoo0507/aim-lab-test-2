@@ -35,5 +35,7 @@ case "$mode" in
   run) .venv/bin/python run.py pipeline "$@" ;;
   evaluate) .venv/bin/python run.py evaluate "$@" ;;
   export) .venv/bin/python run.py export "$@" ;;
-  *) echo "Usage: bash setup.sh [check|prepare|benchmark|pilot|run|evaluate|export]"; exit 2 ;;
+  anneal) .venv/bin/python -m coco_kd.anneal run "$@" ;;
+  anneal-export) .venv/bin/python -m coco_kd.anneal export "$@" ;;
+  *) echo "Usage: bash setup.sh [check|prepare|benchmark|pilot|run|evaluate|export|anneal|anneal-export]"; exit 2 ;;
 esac

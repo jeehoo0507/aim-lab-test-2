@@ -27,20 +27,21 @@ def test_actual_learning_rate_has_no_hidden_scaling():
     assert learning_rate(replace(cfg, student_init="scratch"), 5, 100, "student") == pytest.approx(5e-4)
 
 
-def test_resume_equivalent_to_uninterrupted_and_exports_probes(tmp_path):
+@pytest.mark.parametrize("method", ["low_score_rescue_10", "random_anneal_10"])
+def test_resume_equivalent_to_uninterrupted_and_exports_probes(tmp_path, method):
     cfg = config(tmp_path)
     teacher = train(cfg, "teacher")
-    train(cfg, method="low_score_rescue_10")
-    run = run_path(cfg, method="low_score_rescue_10")
+    train(cfg, method=method)
+    run = run_path(cfg, method=method)
     expected = load_checkpoint(run / "last.pt")
     other = replace(cfg, output_root=str(tmp_path / "resumed"))
     import shutil
     other_teacher = run_path(other, "teacher")
     shutil.copytree(teacher.parent, other_teacher)
     # Moving output path is explicitly supported.
-    train(other, method="low_score_rescue_10", stop_after=1)
-    train(other, method="low_score_rescue_10")
-    actual = load_checkpoint(run_path(other, method="low_score_rescue_10") / "last.pt")
+    train(other, method=method, stop_after=1)
+    train(other, method=method)
+    actual = load_checkpoint(run_path(other, method=method) / "last.pt")
     for key in expected["model"]:
         torch.testing.assert_close(actual["model"][key], expected["model"][key], rtol=0, atol=0)
     assert expected["best_epoch"] == actual["best_epoch"]
@@ -52,13 +53,13 @@ def test_resume_equivalent_to_uninterrupted_and_exports_probes(tmp_path):
         assert a["teacher_full_logits"].shape == (4, 2)
         assert a["attention"].shape == (4, 196)
     assert not (run / "test_metrics.json").exists()  # no test peeking during training
-    evaluation = evaluate_test(cfg, method="low_score_rescue_10")
+    evaluation = evaluate_test(cfg, method=method)
     assert set(evaluation) == {"best", "last"}
     before = (run / "last.pt").stat().st_mtime_ns
-    train(cfg, method="low_score_rescue_10")
+    train(cfg, method=method)
     assert (run / "last.pt").stat().st_mtime_ns == before
     with pytest.raises(ValueError, match="different settings"):
-        train(replace(cfg, pretrained_lr=1e-4), method="low_score_rescue_10")
+        train(replace(cfg, pretrained_lr=1e-4), method=method)
 
 
 def test_probe_randomness_not_affected_by_training_seed_or_batch_size(tmp_path):

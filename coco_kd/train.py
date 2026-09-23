@@ -9,7 +9,7 @@ import torch
 from torch.nn import functional as F
 from tqdm import tqdm
 
-from .config import METHODS
+from .config import TRAIN_METHODS
 from .data import CocoSubset, loader
 from .masking import binary_mask, select_tokens
 from .metrics import classification
@@ -88,7 +88,7 @@ def train_epoch(model, teacher, dataset, optimizer, scaler, cfg, device, method,
             logits, attention = model(x, return_attention=True)
             targets, indices, swaps = None, None, None
             if teacher is not None and method not in ("ce", "teacher"):
-                indices, swaps = select_tokens(attention, method, foreground=foreground, generator=mask_rng)
+                indices, swaps = select_tokens(attention, method, foreground=foreground, generator=mask_rng, epoch=epoch)
                 with torch.no_grad():
                     targets = teacher(x, indices)
             loss, ce, kd = distillation_loss(logits, y, targets, cfg)
@@ -127,8 +127,10 @@ def train_epoch(model, teacher, dataset, optimizer, scaler, cfg, device, method,
 
 
 def train(cfg, role="student", method="student", stop_after=None):
-    if role not in ("teacher", "student") or method not in (*METHODS, "teacher"):
+    if role not in ("teacher", "student") or method not in (*TRAIN_METHODS, "teacher"):
         raise ValueError("Unknown role or method")
+    if method == "random_anneal_10" and cfg.model_scale != "debug" and cfg.epochs != 100:
+        raise ValueError("random_anneal_10 is a fixed 100-epoch protocol; use a separate design for other lengths")
     directory = run_path(cfg, role, method)
     with RunLock(directory / ".run.lock"):
         return _train(cfg, role, method, directory, stop_after)
@@ -230,7 +232,7 @@ def _train(cfg, role, method, directory, stop_after):
         if role == "student" and method == "student" and epoch == 50:
             save_checkpoint(directory / "resume_050.pt", resume_payload)
         write_json(directory / "history.json", history)
-        print(f"{directory.name} {epoch}/{epochs}: val macro={score:.4f}, lr={lr:.3g}, train={training['seconds']:.1f}s, peak={peak:.2f}GiB", flush=True)
+        print(f"{directory.name} {epoch}/{epochs}: val macro={score:.4f}, lr={lr:.3g}, swaps={training['swaps']:.1f}, train={training['seconds']:.1f}s, peak={peak:.2f}GiB", flush=True)
         if stop_after is not None and epoch >= stop_after and epoch < epochs:
             return directory / "last.pt"
     if probe:

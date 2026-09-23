@@ -4,6 +4,8 @@ from pathlib import Path
 
 METHODS = ("ce", "full", "random", "student", "random_rescue_10",
            "foreground_rescue_10", "low_score_rescue_10")
+# Opt-in follow-up; keep the original seven-method pipeline unchanged.
+TRAIN_METHODS = (*METHODS, "random_anneal_10")
 CLASSES = ("giraffe", "airplane", "clock", "zebra", "train", "bird",
            "elephant", "toilet", "cow", "bear")
 

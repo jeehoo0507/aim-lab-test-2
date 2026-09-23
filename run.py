@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from pathlib import Path
 
-from coco_kd.config import Config, METHODS
+from coco_kd.config import Config, METHODS, TRAIN_METHODS
 
 
 def parser():
@@ -23,7 +23,7 @@ def parser():
         if name in ("pipeline", "evaluate"):
             q.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
             q.add_argument("--inits", nargs="+", choices=["scratch", "imagenet"], default=["scratch", "imagenet"])
-            q.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
+            q.add_argument("--methods", nargs="+", choices=TRAIN_METHODS, default=list(METHODS))
         if name == "pipeline":
             q.add_argument("--jobs", choices=["1", "2", "3", "4", "5", "6", "7", "auto"], default="1")
         if name == "benchmark":
@@ -32,7 +32,7 @@ def parser():
             q.add_argument("--max-jobs", type=int, choices=range(1, 8), default=7)
         if name == "train":
             q.add_argument("--role", choices=["teacher", "student"], default="student")
-            q.add_argument("--method", choices=METHODS, default="student")
+            q.add_argument("--method", choices=TRAIN_METHODS, default="student")
             q.add_argument("--seed", type=int, default=0)
             q.add_argument("--init", choices=["scratch", "imagenet"], default="imagenet")
             q.add_argument("--stop-after", type=int)
