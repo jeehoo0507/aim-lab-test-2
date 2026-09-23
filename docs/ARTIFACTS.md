@@ -40,6 +40,18 @@
 
 기본 출력은 `reports/attention_maps/seed0_imagenet_bird.png`다. `--init scratch`, `--class-name giraffe`, `--seed 1`, `--epoch 50` 등으로 바꿀 수 있다. 결과를 공유하려면 생성된 PNG만 `git add reports/attention_maps/seed0_imagenet_bird.png` 후 commit/push한다. 이 그림은 마지막 layer의 head 평균 CLS→patch attention, student의 원래 top-98, 실제 teacher 입력을 보여준다. 초록 테두리는 추가된 patch, 빨간 테두리는 제거된 patch다. 색상 범위는 같은 그림의 모든 attention 패널에서 고정하므로 방법 간 밝기를 비교할 수 있다.
 
+여러 이미지는 같은 스크립트로 일괄 생성할 수 있다. `--count`는 각 클래스의 고정 probe를 **이미지 ID 오름차순**으로 고르며 결과값으로 좋은 예시를 선별하지 않는다. `--all-classes`를 쓰면 10개 클래스 모두에서 고른다. 각 PNG는 세 학습 방법의 attention, 원래 top-98, 실제 teacher 입력을 비교하고 `index.md`에서 순서대로 볼 수 있다.
+
+```bash
+# 새 클래스 20장 모두: seed 0, ImageNet 초기화, epoch 100
+.venv/bin/python scripts/plot_attention_maps.py --class-name bird --count 20
+
+# 모든 클래스에서 3장씩: 총 30장; scratch 모델
+.venv/bin/python scripts/plot_attention_maps.py --all-classes --count 3 --init scratch
+```
+
+출력은 기본적으로 `reports/attention_maps/seed<seed>_<init>_epoch<epoch>/` 아래에 저장된다. `--output-dir`로 바꿀 수 있다. 원본 이미지와 epoch별 probe NPZ가 있는 **서버에서 실행**해야 하며 GPU 재학습은 하지 않는다. 현재 일괄 생성 범위는 학습 중 고정해 저장한 validation probe 200장(클래스당 20장)이다. 전체 COCO 이미지를 새로 평가하는 명령은 아니다. 큰 출력 폴더를 그대로 GitHub에 올리기 전에는 필요한 PNG를 골라 공유한다.
+
 무엇까지 알 수 있는가:
 
 - 저장된 모든 epoch의 선택 변화·교정·teacher 손상·validation 성능은 비교 가능.

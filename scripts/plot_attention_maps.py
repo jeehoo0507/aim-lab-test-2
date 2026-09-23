@@ -112,7 +112,7 @@ def plot(root, data_root, seed, initialization, methods, epoch, class_name, samp
     bar = fig.colorbar(axes[0, 2].images[0], ax=attention_axes, shrink=0.65, pad=0.01)
     bar.set_label("CLS to patch attention (same scale across panels)")
     fig.suptitle(f"COCO probe: {class_name}, image {row['id']} | seed {seed}, {initialization}, epoch {epoch}\n"
-                 "First probe image by ID; green = added patch, red = removed patch", fontsize=13)
+                 "Fixed probe image; green = added patch, red = removed patch", fontsize=13)
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output, dpi=170)
@@ -131,6 +131,46 @@ if __name__ == "__main__":
     parser.add_argument("--class-name", default="bird")
     parser.add_argument("--sample-id", type=int, default=None)
     parser.add_argument("--output", default="reports/attention_maps/seed0_imagenet_bird.png")
+    parser.add_argument("--count", type=int, default=1,
+                        help="Plot the first N fixed probe images by ID per class (maximum 20)")
+    parser.add_argument("--all-classes", action="store_true",
+                        help="Plot each class instead of only --class-name")
+    parser.add_argument("--output-dir", default=None,
+                        help="Directory for batch PNGs and index.md")
     args = parser.parse_args()
-    plot(args.root, args.data_root, args.seed, args.init, args.methods, args.epoch,
-         args.class_name, args.sample_id, args.output)
+    if not 1 <= args.count <= 20:
+        parser.error("--count must be between 1 and 20")
+    batch = args.count > 1 or args.all_classes
+    if batch and args.sample_id is not None:
+        parser.error("--sample-id cannot be combined with --count > 1 or --all-classes")
+    if not batch:
+        plot(args.root, args.data_root, args.seed, args.init, args.methods, args.epoch,
+             args.class_name, args.sample_id, args.output)
+    else:
+        first_run = Path(args.root) / f"seed_{args.seed}" / args.init / args.methods[0]
+        config = json.loads((first_run / "config.json").read_text())
+        data_root = Path(args.data_root or config["data_root"])
+        manifest = json.loads((data_root / "manifest.json").read_text())
+        classes = manifest["classes"] if args.all_classes else [args.class_name]
+        if any(name not in manifest["classes"] for name in classes):
+            parser.error(f"Unknown class; available: {manifest['classes']}")
+        output_dir = Path(args.output_dir or
+                          f"reports/attention_maps/seed{args.seed}_{args.init}_epoch{args.epoch}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        index = [f"# COCO attention and masking: seed {args.seed}, {args.init}, epoch {args.epoch}",
+                 "", "Fixed probe images, first IDs per class. Green patches were added to the"
+                 " teacher input; red patches were removed.", ""]
+        for name in classes:
+            rows = sorted((row for row in manifest["images"]
+                           if row["probe"] and row["label"] == manifest["classes"].index(name)),
+                          key=lambda row: row["id"])
+            if len(rows) < args.count:
+                raise ValueError(f"Only {len(rows)} fixed probe images for {name}")
+            index.extend([f"## {name}", ""])
+            for row in rows[:args.count]:
+                filename = f"{name}_{row['id']}.png"
+                plot(args.root, data_root, args.seed, args.init, args.methods, args.epoch,
+                     name, row["id"], output_dir / filename)
+                index.extend([f"Image {row['id']}", "", f"![{name} {row['id']}]({filename})", ""])
+        (output_dir / "index.md").write_text("\n".join(index))
+        print(f"Browse {output_dir.resolve() / 'index.md'}")
