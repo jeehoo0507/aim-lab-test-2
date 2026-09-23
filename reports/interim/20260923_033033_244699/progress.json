@@ -1,0 +1,845 @@
+{
+  "snapshot_utc": "20260923_033033_244699",
+  "source_root": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/experiment2",
+  "planned_student_runs": 42,
+  "completed_student_runs": 42,
+  "analysis_groups": [
+    [
+      0,
+      "scratch"
+    ],
+    [
+      0,
+      "imagenet"
+    ],
+    [
+      1,
+      "scratch"
+    ],
+    [
+      1,
+      "imagenet"
+    ],
+    [
+      2,
+      "scratch"
+    ],
+    [
+      2,
+      "imagenet"
+    ]
+  ],
+  "runs": [
+    {
+      "seed": 0,
+      "role": "teacher",
+      "initialization": "imagenet",
+      "method": "teacher",
+      "state": "complete",
+      "last_epoch": 30,
+      "best_epoch": 22,
+      "best_val_macro": 0.986,
+      "last_val_macro": 0.985,
+      "recent_epoch_seconds_with_probe": [
+        101.15741958701983,
+        101.183280155994,
+        101.10564616788179,
+        102.64627453917637,
+        101.86935046804138
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "ce",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 64,
+      "best_val_macro": 0.615,
+      "last_val_macro": 0.608,
+      "recent_epoch_seconds_with_probe": [
+        107.476997054182,
+        106.69545595999807,
+        106.6611021249555,
+        106.55834587407298,
+        115.23171225003898
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "full",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 51,
+      "best_val_macro": 0.6040000000000001,
+      "last_val_macro": 0.5890000000000001,
+      "recent_epoch_seconds_with_probe": [
+        109.87954730121419,
+        110.992102191085,
+        110.64015753590502,
+        110.26407808903605,
+        120.06463222485036
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "random",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 74,
+      "best_val_macro": 0.6060000000000001,
+      "last_val_macro": 0.5940000000000001,
+      "recent_epoch_seconds_with_probe": [
+        109.94308912591077,
+        110.2274387080688,
+        110.450823741965,
+        109.62373426090926,
+        120.99926798185334
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "student",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 35,
+      "best_val_macro": 0.62,
+      "last_val_macro": 0.607,
+      "recent_epoch_seconds_with_probe": [
+        109.98344197007827,
+        109.36996865202673,
+        111.21704110805877,
+        108.96649005822837,
+        118.10060687293299
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "random_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 68,
+      "best_val_macro": 0.627,
+      "last_val_macro": 0.615,
+      "recent_epoch_seconds_with_probe": [
+        115.82473646686412,
+        114.7728777860757,
+        115.05626307893544,
+        114.85684378282167,
+        126.03722899686545
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "foreground_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 77,
+      "best_val_macro": 0.621,
+      "last_val_macro": 0.6170000000000001,
+      "recent_epoch_seconds_with_probe": [
+        116.1123585398309,
+        116.84027464012615,
+        117.72657527192496,
+        118.83346578897908,
+        124.29912703903392
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "low_score_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 91,
+      "best_val_macro": 0.628,
+      "last_val_macro": 0.6170000000000001,
+      "recent_epoch_seconds_with_probe": [
+        116.50212778104469,
+        115.82791278790683,
+        114.93559292703867,
+        114.95960090612061,
+        123.15302646486089
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "ce",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 60,
+      "best_val_macro": 0.9730000000000001,
+      "last_val_macro": 0.9700000000000001,
+      "recent_epoch_seconds_with_probe": [
+        107.10000878595747,
+        106.89543640194461,
+        106.53530800715089,
+        106.71075955405831,
+        115.78592646191828
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "full",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 10,
+      "best_val_macro": 0.97,
+      "last_val_macro": 0.967,
+      "recent_epoch_seconds_with_probe": [
+        110.66694491286762,
+        111.49666651990265,
+        111.14938764111139,
+        109.81409515603445,
+        118.73150010895915
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "random",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 45,
+      "best_val_macro": 0.9710000000000001,
+      "last_val_macro": 0.968,
+      "recent_epoch_seconds_with_probe": [
+        110.05779063003138,
+        109.9065651788842,
+        109.72038370999508,
+        109.67629142920487,
+        118.58936801785603
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "student",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 10,
+      "best_val_macro": 0.969,
+      "last_val_macro": 0.9639999999999999,
+      "recent_epoch_seconds_with_probe": [
+        110.30548502807505,
+        110.11906895111315,
+        110.3515722900629,
+        109.797185348114,
+        119.46275324909948
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "random_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 14,
+      "best_val_macro": 0.97,
+      "last_val_macro": 0.966,
+      "recent_epoch_seconds_with_probe": [
+        113.91536893509328,
+        113.97081549395807,
+        114.42614445998333,
+        115.16130243195221,
+        122.69086027494632
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "foreground_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 66,
+      "best_val_macro": 0.9710000000000001,
+      "last_val_macro": 0.9649999999999999,
+      "recent_epoch_seconds_with_probe": [
+        116.03864425583743,
+        115.8657100899145,
+        117.3509400698822,
+        117.3617431819439,
+        124.4500316879712
+      ]
+    },
+    {
+      "seed": 0,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "low_score_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 81,
+      "best_val_macro": 0.9710000000000001,
+      "last_val_macro": 0.9700000000000001,
+      "recent_epoch_seconds_with_probe": [
+        114.04614361003041,
+        114.33313486794941,
+        114.01288157794625,
+        116.29094040603377,
+        123.38401198503561
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "teacher",
+      "initialization": "imagenet",
+      "method": "teacher",
+      "state": "complete",
+      "last_epoch": 30,
+      "best_epoch": 11,
+      "best_val_macro": 0.985,
+      "last_val_macro": 0.983,
+      "recent_epoch_seconds_with_probe": [
+        101.02132513001561,
+        101.52617448894307,
+        101.56387778790668,
+        101.05692525883205,
+        101.88603271194734
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "ce",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 40,
+      "best_val_macro": 0.591,
+      "last_val_macro": 0.587,
+      "recent_epoch_seconds_with_probe": [
+        107.13017219793983,
+        106.92764952103607,
+        106.77260003890842,
+        106.72374265803955,
+        115.05938992882147
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "full",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 84,
+      "best_val_macro": 0.6050000000000001,
+      "last_val_macro": 0.589,
+      "recent_epoch_seconds_with_probe": [
+        109.95644667488523,
+        109.62096622493118,
+        110.82328920904547,
+        109.56686405208893,
+        120.06628569797613
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "random",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 85,
+      "best_val_macro": 0.615,
+      "last_val_macro": 0.611,
+      "recent_epoch_seconds_with_probe": [
+        110.11295993998647,
+        109.84457857790403,
+        109.53207251196727,
+        110.22720381105319,
+        118.73375116591342
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "student",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 82,
+      "best_val_macro": 0.611,
+      "last_val_macro": 0.5959999999999999,
+      "recent_epoch_seconds_with_probe": [
+        110.02103365096264,
+        109.51480742404237,
+        110.67696334118955,
+        110.08899239101447,
+        118.1737370500341
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "random_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 73,
+      "best_val_macro": 0.6170000000000001,
+      "last_val_macro": 0.608,
+      "recent_epoch_seconds_with_probe": [
+        115.3675979860127,
+        114.8638764040079,
+        115.40158189903013,
+        113.88374008680694,
+        124.01296237693168
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "foreground_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 72,
+      "best_val_macro": 0.6130000000000001,
+      "last_val_macro": 0.6010000000000001,
+      "recent_epoch_seconds_with_probe": [
+        116.18140809098259,
+        116.16307487804443,
+        118.26493891188875,
+        116.5514821021352,
+        125.69330945797265
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "low_score_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 89,
+      "best_val_macro": 0.622,
+      "last_val_macro": 0.608,
+      "recent_epoch_seconds_with_probe": [
+        115.8730043109972,
+        114.07493371795863,
+        115.6094481300097,
+        115.20172427408397,
+        125.22660148702562
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "ce",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 17,
+      "best_val_macro": 0.9710000000000001,
+      "last_val_macro": 0.9659999999999999,
+      "recent_epoch_seconds_with_probe": [
+        106.24053264805116,
+        105.87186922202818,
+        106.59349813498557,
+        105.96372671192512,
+        114.70929962606169
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "full",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 86,
+      "best_val_macro": 0.9740000000000002,
+      "last_val_macro": 0.9719999999999999,
+      "recent_epoch_seconds_with_probe": [
+        110.38929632096551,
+        109.10168954310939,
+        110.86384874489158,
+        111.19636418786831,
+        115.66642147209495
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "random",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 57,
+      "best_val_macro": 0.9730000000000001,
+      "last_val_macro": 0.968,
+      "recent_epoch_seconds_with_probe": [
+        110.12819305597804,
+        109.89464332908392,
+        109.76919634197839,
+        109.4165534330532,
+        120.17869671899825
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "student",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 80,
+      "best_val_macro": 0.9720000000000001,
+      "last_val_macro": 0.9710000000000001,
+      "recent_epoch_seconds_with_probe": [
+        109.68750273319893,
+        109.59629419981502,
+        109.53718151082285,
+        108.79080481105484,
+        121.76993427914567
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "random_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 96,
+      "best_val_macro": 0.9719999999999999,
+      "last_val_macro": 0.97,
+      "recent_epoch_seconds_with_probe": [
+        114.09635250200517,
+        113.35149670299143,
+        114.5787594281137,
+        114.46843141806312,
+        122.70080991485156
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "foreground_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 84,
+      "best_val_macro": 0.9729999999999999,
+      "last_val_macro": 0.9719999999999999,
+      "recent_epoch_seconds_with_probe": [
+        116.1895361628849,
+        115.97516427398659,
+        117.39812917402014,
+        115.72461591497995,
+        127.25920943100937
+      ]
+    },
+    {
+      "seed": 1,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "low_score_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 14,
+      "best_val_macro": 0.9710000000000001,
+      "last_val_macro": 0.962,
+      "recent_epoch_seconds_with_probe": [
+        114.3145904620178,
+        114.57231442304328,
+        114.86508151004091,
+        114.11299744504504,
+        122.61224693991244
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "teacher",
+      "initialization": "imagenet",
+      "method": "teacher",
+      "state": "complete",
+      "last_epoch": 30,
+      "best_epoch": 17,
+      "best_val_macro": 0.9810000000000001,
+      "last_val_macro": 0.978,
+      "recent_epoch_seconds_with_probe": [
+        101.39673373894766,
+        101.52822036715224,
+        101.68266869685613,
+        102.2638376520481,
+        102.58978325384669
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "ce",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 67,
+      "best_val_macro": 0.6160000000000001,
+      "last_val_macro": 0.5940000000000001,
+      "recent_epoch_seconds_with_probe": [
+        106.57070352882147,
+        105.96410696418025,
+        106.38883690303192,
+        106.77965780696832,
+        116.74793411395513
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "full",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 90,
+      "best_val_macro": 0.6170000000000001,
+      "last_val_macro": 0.5970000000000001,
+      "recent_epoch_seconds_with_probe": [
+        109.50159674393944,
+        110.21671315096319,
+        110.49120669695549,
+        110.08875130210072,
+        120.72392430808395
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "random",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 100,
+      "best_val_macro": 0.6070000000000001,
+      "last_val_macro": 0.6070000000000001,
+      "recent_epoch_seconds_with_probe": [
+        109.49277241108939,
+        109.9165083009284,
+        111.0567442139145,
+        109.91845225496218,
+        118.82461488991976
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "student",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 87,
+      "best_val_macro": 0.6100000000000001,
+      "last_val_macro": 0.602,
+      "recent_epoch_seconds_with_probe": [
+        109.12246750597842,
+        109.24800379900262,
+        109.14206324797124,
+        109.4421025000047,
+        118.93926347885281
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "random_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 36,
+      "best_val_macro": 0.622,
+      "last_val_macro": 0.603,
+      "recent_epoch_seconds_with_probe": [
+        114.26011814502999,
+        113.77239669999108,
+        114.78738812915981,
+        114.12233945494518,
+        121.12768085487187
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "foreground_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 70,
+      "best_val_macro": 0.5920000000000001,
+      "last_val_macro": 0.5810000000000001,
+      "recent_epoch_seconds_with_probe": [
+        117.68335672514513,
+        117.82127914507873,
+        115.73891249508597,
+        120.26687371707521,
+        126.07197366608307
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "scratch",
+      "method": "low_score_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 97,
+      "best_val_macro": 0.614,
+      "last_val_macro": 0.61,
+      "recent_epoch_seconds_with_probe": [
+        114.33908711699769,
+        115.55376314208843,
+        115.7565948178526,
+        115.47106351400726,
+        123.65683711506426
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "ce",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 49,
+      "best_val_macro": 0.9719999999999999,
+      "last_val_macro": 0.9639999999999999,
+      "recent_epoch_seconds_with_probe": [
+        106.18783121812157,
+        106.26586526003666,
+        106.72118803183548,
+        107.04028804390691,
+        114.37407107790932
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "full",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 87,
+      "best_val_macro": 0.9720000000000001,
+      "last_val_macro": 0.967,
+      "recent_epoch_seconds_with_probe": [
+        107.9101364358794,
+        107.90822480199859,
+        108.63763167196885,
+        109.53078474896029,
+        120.96555900084786
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "random",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 78,
+      "best_val_macro": 0.9730000000000001,
+      "last_val_macro": 0.968,
+      "recent_epoch_seconds_with_probe": [
+        108.08831973792985,
+        107.070230667945,
+        109.98455563699827,
+        108.75071887508966,
+        121.2216709938366
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "student",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 54,
+      "best_val_macro": 0.9690000000000001,
+      "last_val_macro": 0.966,
+      "recent_epoch_seconds_with_probe": [
+        108.06358443503268,
+        107.72601886698976,
+        108.87664932198822,
+        109.11106521985494,
+        118.13936890498735
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "random_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 68,
+      "best_val_macro": 0.975,
+      "last_val_macro": 0.9649999999999999,
+      "recent_epoch_seconds_with_probe": [
+        110.01887984899804,
+        110.3410077879671,
+        108.03655426995829,
+        109.28424180601723,
+        115.60211301012896
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "foreground_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 48,
+      "best_val_macro": 0.9780000000000001,
+      "last_val_macro": 0.9730000000000001,
+      "recent_epoch_seconds_with_probe": [
+        109.26321187498979,
+        108.27548052486964,
+        106.98560837097466,
+        109.89517600415275,
+        114.0363687761128
+      ]
+    },
+    {
+      "seed": 2,
+      "role": "student",
+      "initialization": "imagenet",
+      "method": "low_score_rescue_10",
+      "state": "complete",
+      "last_epoch": 100,
+      "best_epoch": 75,
+      "best_val_macro": 0.975,
+      "last_val_macro": 0.9710000000000001,
+      "recent_epoch_seconds_with_probe": [
+        107.74004765087739,
+        110.15222942293622,
+        107.56268308102153,
+        107.25296963006258,
+        112.61651122709736
+      ]
+    }
+  ],
+  "note": "Validation only. Incomplete means no completion marker, not proof of a running process."
+}
