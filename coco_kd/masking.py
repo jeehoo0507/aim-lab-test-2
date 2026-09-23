@@ -6,6 +6,8 @@ def effective_method(method, epoch):
     switches = {"full_to_student_20": ("full", 20),
                 "full_to_student_50": ("full", 50),
                 "random_to_student_10": ("random", 10),
+                "random_to_student_20": ("random", 20),
+                "random_to_student_50": ("random", 50),
                 "random_rescue_to_student_20": ("random_rescue_10", 20)}
     if method in switches:
         if epoch is None:

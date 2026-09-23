@@ -64,6 +64,8 @@ def test_full_to_student_switch_boundary(method, switch):
 
 @pytest.mark.parametrize("method,first,switch", [
     ("random_to_student_10", "random", 10),
+    ("random_to_student_20", "random", 20),
+    ("random_to_student_50", "random", 50),
     ("random_rescue_to_student_20", "random_rescue_10", 20),
 ])
 def test_random_to_student_switch_matches_original_methods(method, first, switch):
