@@ -32,6 +32,14 @@
 
 `export --push`에는 위 분석 결과, config/history/test 원예측, dataset manifest, storage/환경 기록, checkpoint 경로/크기/hash 목록을 포함한다. `*.pt`, 전체 attention/probe NPZ, 이미지 원본은 서버에 둔다. 따라서 **보고서 push는 checkpoint 백업이 아니다.** 서버 손실에 대비한 가중치 백업은 별도 디스크/스토리지로 수행해야 한다.
 
+실제 이미지별 attention map은 서버에 보존된 probe NPZ와 데이터셋으로 그릴 수 있다. 다음 명령은 결과로 샘플을 고르지 않고 **bird 클래스 고정 probe 중 ID가 가장 작은 이미지**를 사용한다. Seed 0 ImageNet student의 epoch 100에서 MaskedKD, Random Rescue 10, FG Rescue 10을 같은 이미지와 같은 색상 척도로 비교한다. 훈련 결과나 기존 probe 파일을 수정하지 않는다.
+
+```bash
+.venv/bin/python scripts/plot_attention_maps.py
+```
+
+기본 출력은 `reports/attention_maps/seed0_imagenet_bird.png`다. `--init scratch`, `--class-name giraffe`, `--seed 1`, `--epoch 50` 등으로 바꿀 수 있다. 결과를 공유하려면 생성된 PNG만 `git add reports/attention_maps/seed0_imagenet_bird.png` 후 commit/push한다. 이 그림은 마지막 layer의 head 평균 CLS→patch attention, student의 원래 top-98, 실제 teacher 입력을 보여준다. 초록 테두리는 추가된 patch, 빨간 테두리는 제거된 patch다. 색상 범위는 같은 그림의 모든 attention 패널에서 고정하므로 방법 간 밝기를 비교할 수 있다.
+
 무엇까지 알 수 있는가:
 
 - 저장된 모든 epoch의 선택 변화·교정·teacher 손상·validation 성능은 비교 가능.
