@@ -1,0 +1,5 @@
+seed,initialization,method,threshold,reached_three_epochs,first_epoch,updates_to_first,training_seconds_to_first,wall_seconds_to_first_with_probe,last10_val_mean,previous10_val_mean
+0,imagenet,random_anneal_10,0.8,True,2.0,94.0,196.56154519994743,229.10029297089204,0.9692000000000001,0.9692999999999999
+0,imagenet,student,0.8,True,2.0,94.0,190.0860396141652,222.1547694168985,0.9627000000000001,0.9629999999999999
+0,scratch,random_anneal_10,0.8,False,,,,,0.616,0.6125999999999999
+0,scratch,student,0.8,False,,,,,0.603,0.5981

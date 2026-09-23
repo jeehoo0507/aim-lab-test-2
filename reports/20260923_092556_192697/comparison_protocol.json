@@ -1,0 +1,480 @@
+{
+  "schema": 1,
+  "config": {
+    "data_root": "data/coco_single",
+    "output_root": "outputs/random_anneal",
+    "device": "cuda",
+    "num_classes": 10,
+    "batch_size": 32,
+    "eval_batch_size": 32,
+    "accumulation_steps": 4,
+    "num_workers": 0,
+    "num_threads": 2,
+    "epochs": 100,
+    "teacher_epochs": 30,
+    "seed": 0,
+    "scratch_lr": 0.0005,
+    "pretrained_lr": 5e-05,
+    "teacher_lr": 5e-05,
+    "min_lr": 1e-06,
+    "warmup_epochs": 5,
+    "weight_decay": 0.05,
+    "drop_path": 0.1,
+    "label_smoothing": 0.1,
+    "kd_alpha": 0.5,
+    "temperature": 1.0,
+    "keep_tokens": 98,
+    "foreground_threshold": 0.5,
+    "checkpoint_every": 10,
+    "checkpoint_target_gb": 5.0,
+    "output_warning_gb": 10.0,
+    "diagnostic_epochs": [
+      0,
+      10,
+      25,
+      50,
+      75,
+      100
+    ],
+    "diagnostic_repeats": 5,
+    "student_init": "imagenet",
+    "teacher_pretrained": true,
+    "amp": true,
+    "grad_clip": 1.0,
+    "model_scale": "deit",
+    "max_train_batches": null
+  },
+  "pairs": [
+    [
+      0,
+      "imagenet"
+    ],
+    [
+      0,
+      "scratch"
+    ]
+  ],
+  "methods": [
+    "student",
+    "random_anneal_10"
+  ],
+  "teachers": [
+    {
+      "seed": 0,
+      "source": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/experiment2/seed_0/teacher/best.pt",
+      "sha256": "4a18ddc11c98c662fd77ff9f8b5fc249e00d2c0052263e0e8d76f91088556646",
+      "epoch": 22,
+      "training_code_sha256": "2ea85e2003c012bfeecffa1106a627c256a5524051724632a8427f3ee979855a"
+    }
+  ],
+  "schedule": [
+    {
+      "epoch": 0,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 1,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 2,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 3,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 4,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 5,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 6,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 7,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 8,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 9,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 10,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 11,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 12,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 13,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 14,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 15,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 16,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 17,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 18,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 19,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 20,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 21,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 22,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 23,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 24,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 25,
+      "random_swaps": 10
+    },
+    {
+      "epoch": 26,
+      "random_swaps": 9
+    },
+    {
+      "epoch": 27,
+      "random_swaps": 9
+    },
+    {
+      "epoch": 28,
+      "random_swaps": 9
+    },
+    {
+      "epoch": 29,
+      "random_swaps": 9
+    },
+    {
+      "epoch": 30,
+      "random_swaps": 9
+    },
+    {
+      "epoch": 31,
+      "random_swaps": 9
+    },
+    {
+      "epoch": 32,
+      "random_swaps": 8
+    },
+    {
+      "epoch": 33,
+      "random_swaps": 8
+    },
+    {
+      "epoch": 34,
+      "random_swaps": 8
+    },
+    {
+      "epoch": 35,
+      "random_swaps": 8
+    },
+    {
+      "epoch": 36,
+      "random_swaps": 8
+    },
+    {
+      "epoch": 37,
+      "random_swaps": 8
+    },
+    {
+      "epoch": 38,
+      "random_swaps": 7
+    },
+    {
+      "epoch": 39,
+      "random_swaps": 7
+    },
+    {
+      "epoch": 40,
+      "random_swaps": 7
+    },
+    {
+      "epoch": 41,
+      "random_swaps": 7
+    },
+    {
+      "epoch": 42,
+      "random_swaps": 7
+    },
+    {
+      "epoch": 43,
+      "random_swaps": 7
+    },
+    {
+      "epoch": 44,
+      "random_swaps": 6
+    },
+    {
+      "epoch": 45,
+      "random_swaps": 6
+    },
+    {
+      "epoch": 46,
+      "random_swaps": 6
+    },
+    {
+      "epoch": 47,
+      "random_swaps": 6
+    },
+    {
+      "epoch": 48,
+      "random_swaps": 6
+    },
+    {
+      "epoch": 49,
+      "random_swaps": 6
+    },
+    {
+      "epoch": 50,
+      "random_swaps": 5
+    },
+    {
+      "epoch": 51,
+      "random_swaps": 5
+    },
+    {
+      "epoch": 52,
+      "random_swaps": 5
+    },
+    {
+      "epoch": 53,
+      "random_swaps": 5
+    },
+    {
+      "epoch": 54,
+      "random_swaps": 5
+    },
+    {
+      "epoch": 55,
+      "random_swaps": 5
+    },
+    {
+      "epoch": 56,
+      "random_swaps": 4
+    },
+    {
+      "epoch": 57,
+      "random_swaps": 4
+    },
+    {
+      "epoch": 58,
+      "random_swaps": 4
+    },
+    {
+      "epoch": 59,
+      "random_swaps": 4
+    },
+    {
+      "epoch": 60,
+      "random_swaps": 4
+    },
+    {
+      "epoch": 61,
+      "random_swaps": 4
+    },
+    {
+      "epoch": 62,
+      "random_swaps": 3
+    },
+    {
+      "epoch": 63,
+      "random_swaps": 3
+    },
+    {
+      "epoch": 64,
+      "random_swaps": 3
+    },
+    {
+      "epoch": 65,
+      "random_swaps": 3
+    },
+    {
+      "epoch": 66,
+      "random_swaps": 3
+    },
+    {
+      "epoch": 67,
+      "random_swaps": 3
+    },
+    {
+      "epoch": 68,
+      "random_swaps": 2
+    },
+    {
+      "epoch": 69,
+      "random_swaps": 2
+    },
+    {
+      "epoch": 70,
+      "random_swaps": 2
+    },
+    {
+      "epoch": 71,
+      "random_swaps": 2
+    },
+    {
+      "epoch": 72,
+      "random_swaps": 2
+    },
+    {
+      "epoch": 73,
+      "random_swaps": 2
+    },
+    {
+      "epoch": 74,
+      "random_swaps": 1
+    },
+    {
+      "epoch": 75,
+      "random_swaps": 1
+    },
+    {
+      "epoch": 76,
+      "random_swaps": 1
+    },
+    {
+      "epoch": 77,
+      "random_swaps": 1
+    },
+    {
+      "epoch": 78,
+      "random_swaps": 1
+    },
+    {
+      "epoch": 79,
+      "random_swaps": 1
+    },
+    {
+      "epoch": 80,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 81,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 82,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 83,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 84,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 85,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 86,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 87,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 88,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 89,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 90,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 91,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 92,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 93,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 94,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 95,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 96,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 97,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 98,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 99,
+      "random_swaps": 0
+    },
+    {
+      "epoch": 100,
+      "random_swaps": 0
+    }
+  ],
+  "teacher_patch_budget": 98,
+  "student_patch_budget": 196,
+  "primary_endpoint": "test macro accuracy at epoch 100; validation-best also reported",
+  "interpretation": "Two-arm schedule comparison, not proof that decay beats constant Random 10. Seed 0 is a pilot; the existing test set has already been examined."
+}

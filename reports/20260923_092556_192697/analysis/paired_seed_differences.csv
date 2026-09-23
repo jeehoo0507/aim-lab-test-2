@@ -1,0 +1,9 @@
+initialization,checkpoint,method,reference,metric,n_seeds,mean_difference_pp,ci_low_pp,ci_high_pp,seed_differences_pp,interpretation
+imagenet,best,random_anneal_10,student,macro_accuracy,1,-0.46777625376552834,,,"{""0"": -0.46777625376552834}",exploratory paired t interval; n=3 insufficient for strong claims
+imagenet,best,random_anneal_10,student,accuracy,1,-0.37523452157598447,,,"{""0"": -0.37523452157598447}",exploratory paired t interval; n=3 insufficient for strong claims
+imagenet,last,random_anneal_10,student,macro_accuracy,1,-0.1593763845634033,,,"{""0"": -0.1593763845634033}",exploratory paired t interval; n=3 insufficient for strong claims
+imagenet,last,random_anneal_10,student,accuracy,1,0.0,,,"{""0"": 0.0}",exploratory paired t interval; n=3 insufficient for strong claims
+scratch,best,random_anneal_10,student,macro_accuracy,1,0.7522374111381347,,,"{""0"": 0.7522374111381347}",exploratory paired t interval; n=3 insufficient for strong claims
+scratch,best,random_anneal_10,student,accuracy,1,0.5628517823639823,,,"{""0"": 0.5628517823639823}",exploratory paired t interval; n=3 insufficient for strong claims
+scratch,last,random_anneal_10,student,macro_accuracy,1,0.2370624192923665,,,"{""0"": 0.2370624192923665}",exploratory paired t interval; n=3 insufficient for strong claims
+scratch,last,random_anneal_10,student,accuracy,1,0.5628517823639823,,,"{""0"": 0.5628517823639823}",exploratory paired t interval; n=3 insufficient for strong claims
