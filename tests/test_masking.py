@@ -62,6 +62,31 @@ def test_full_to_student_switch_boundary(method, switch):
         select_tokens(attn, method)
 
 
+@pytest.mark.parametrize("method,first,switch", [
+    ("random_to_student_10", "random", 10),
+    ("random_rescue_to_student_20", "random_rescue_10", 20),
+])
+def test_random_to_student_switch_matches_original_methods(method, first, switch):
+    attn = torch.arange(196, dtype=torch.float32).repeat(2, 1)
+    foreground = torch.zeros_like(attn, dtype=torch.bool)
+    assert effective_method(method, switch) == first
+    assert effective_method(method, switch + 1) == "student"
+    expected, expected_swaps = select_tokens(attn, first, foreground=foreground,
+                                              generator=torch.Generator().manual_seed(7), epoch=switch)
+    actual, actual_swaps = select_tokens(attn, method, foreground=foreground,
+                                          generator=torch.Generator().manual_seed(7), epoch=switch)
+    assert torch.equal(actual, expected)
+    assert torch.equal(actual_swaps, expected_swaps)
+    after, after_swaps = select_tokens(attn, method, foreground=foreground, epoch=switch + 1)
+    assert torch.equal(after, attn.topk(98, 1).indices)
+    assert not after_swaps.any()
+    probe = Probe.__new__(Probe)
+    probe.device = torch.device("cpu")
+    ids = torch.arange(2)
+    probe_after, _ = probe.choose(attn, method, foreground, ids, epoch=switch + 1)
+    assert torch.equal(probe_after, after)
+
+
 def test_metric_zero_fg_and_accuracy():
     fg = np.zeros((2, 196), bool)
     fg[0, :20] = True

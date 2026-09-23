@@ -2,12 +2,16 @@ import torch
 
 
 def effective_method(method, epoch):
-    """Full teacher input through the switch epoch, then student top-98."""
-    switches = {"full_to_student_20": 20, "full_to_student_50": 50}
+    """Resolve opt-in fixed switches to MaskedKD without resetting training."""
+    switches = {"full_to_student_20": ("full", 20),
+                "full_to_student_50": ("full", 50),
+                "random_to_student_10": ("random", 10),
+                "random_rescue_to_student_20": ("random_rescue_10", 20)}
     if method in switches:
         if epoch is None:
             raise ValueError("Switch schedule requires an epoch")
-        return "full" if epoch <= switches[method] else "student"
+        first, switch = switches[method]
+        return first if epoch <= switch else "student"
     return method
 
 
