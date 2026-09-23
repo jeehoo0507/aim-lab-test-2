@@ -1,0 +1,76 @@
+{
+  "python": "3.11.11 (main, Mar 17 2025, 21:02:09) [Clang 20.1.0 ]",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "torch": "2.5.1+cu124",
+  "git_commit": "3e64f6b5d4dc8b85fcbc0281f1baaddc2c51de1d",
+  "git_status": "",
+  "device": "cuda:0",
+  "student_parameters": 5526346,
+  "teacher_parameters": 21669514,
+  "checkpoint_storage": {
+    "student_gib": 2.5939926356077194,
+    "teacher_gib": 0.48435138165950775,
+    "maskedkd_midpoint_gib": 0.4940938353538513,
+    "total_gib": 3.5724378526210785,
+    "total_decimal_gb": 3.835875936,
+    "target_decimal_gb": 5.0,
+    "within_target": true,
+    "excludes": "data, environments/caches, probes/validation, analysis/export; approximate completed-run tensor bytes"
+  },
+  "output_warning_decimal_gb": 10.0,
+  "estimate_excludes": "raw probes, data, uv environment/caches, analysis/export",
+  "storage": [
+    {
+      "name": "project",
+      "configured": "/home/kebap/Desktop/workspace/34/aim-lab-test-2",
+      "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2",
+      "free_gib": 102.52148818969727,
+      "total_gib": 794.6720962524414,
+      "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  652G  103G  87% /home",
+      "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+    },
+    {
+      "name": "data",
+      "configured": "data/coco_single",
+      "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/data/coco_single",
+      "free_gib": 102.52148818969727,
+      "total_gib": 794.6720962524414,
+      "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  652G  103G  87% /home",
+      "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+    },
+    {
+      "name": "outputs",
+      "configured": "outputs/experiment2",
+      "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/experiment2",
+      "free_gib": 102.52148818969727,
+      "total_gib": 794.6720962524414,
+      "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  652G  103G  87% /home",
+      "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+    },
+    {
+      "name": "torch_cache",
+      "configured": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/.cache/torch",
+      "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/.cache/torch",
+      "free_gib": 102.52148818969727,
+      "total_gib": 794.6720962524414,
+      "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  652G  103G  87% /home",
+      "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+    },
+    {
+      "name": "uv_cache",
+      "configured": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/.cache/uv",
+      "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/.cache/uv",
+      "free_gib": 102.52148818969727,
+      "total_gib": 794.6720962524414,
+      "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  652G  103G  87% /home",
+      "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+    }
+  ],
+  "gpu": "Tue Sep 22 14:48:19 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 595.84                 Driver Version: 595.84         CUDA Version: 13.2     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA RTX A5000               Off |   00000000:B3:00.0  On |                  Off |\n| 30%   60C    P2             71W /  230W |    4935MiB /  24564MiB |      2%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A          225314      G   /usr/lib/xorg/Xorg                      112MiB |\n|    0   N/A  N/A          226032      G   /usr/bin/gnome-shell                    917MiB |\n|    0   N/A  N/A          227196      G   ...exec/xdg-desktop-portal-gnome          9MiB |\n|    0   N/A  N/A          481631      C   /opt/conda/bin/python3.11              3446MiB |\n|    0   N/A  N/A          779809      G   /usr/bin/nautilus                        18MiB |\n|    0   N/A  N/A         2805370      C   /usr/share/rustdesk/rustdesk            242MiB |\n|    0   N/A  N/A         2825335      G   /usr/share/rustdesk/rustdesk             13MiB |\n|    0   N/A  N/A         3591743      G   /usr/share/rustdesk/rustdesk             47MiB |\n+-----------------------------------------------------------------------------------------+",
+  "block_devices": "NAME          SIZE ROTA TYPE FSTYPE   MOUNTPOINTS                                       MODEL\nloop0        12.7M    0 loop squashfs /snap/firmware-updater/258                        \nloop1       261.3M    0 loop squashfs /snap/firefox/8929                                \nloop2           4K    0 loop squashfs /snap/bare/5                                      \nloop3          74M    0 loop squashfs /snap/core22/2437                                 \nloop4          74M    0 loop squashfs /snap/core22/2955                                 \nloop5       222.1M    0 loop squashfs /snap/thunderbird/1259                            \nloop6       531.4M    0 loop squashfs /snap/gnome-42-2204/247                           \nloop7        66.8M    0 loop squashfs /snap/core24/1643                                 \nloop8       614.5M    0 loop squashfs /snap/gnome-46-2404/164                           \nloop9       260.8M    0 loop squashfs /snap/firefox/8863                                \nloop10      214.9M    0 loop squashfs /snap/brave/684                                   \nloop11       16.5M    0 loop squashfs /snap/firmware-updater/226                        \nloop12       50.3M    0 loop squashfs /snap/snapd/27738                                 \nloop13      606.1M    0 loop squashfs /snap/gnome-46-2404/153                           \nloop14      531.5M    0 loop squashfs /snap/gnome-42-2204/263                           \nloop15       91.7M    0 loop squashfs /snap/gtk-common-themes/1535                      \nloop16        1.2G    0 loop squashfs /snap/libreoffice/374                             \nloop17        1.1G    0 loop squashfs /snap/libreoffice/377                             \nloop18        395M    0 loop squashfs /snap/mesa-2404/1165                              \nloop19        402M    0 loop squashfs /snap/mesa-2404/1839                              \nloop20      207.2M    0 loop squashfs /snap/moonlight/2904                              \nloop21      207.2M    0 loop squashfs /snap/moonlight/2924                              \nloop22       66.8M    0 loop squashfs /snap/core24/2124                                 \nloop23       11.8M    0 loop squashfs /snap/snap-store/1390                             \nloop24      221.4M    0 loop squashfs /snap/thunderbird/1255                            \nloop25       50.1M    0 loop squashfs /snap/snapd/27710                                 \nloop26        828K    0 loop squashfs /snap/snapd-desktop-integration/387               \nloop27        828K    0 loop squashfs /snap/snapd-desktop-integration/391               \nloop28       11.8M    0 loop squashfs /snap/snap-store/1419                             \nloop29      214.9M    0 loop squashfs /snap/brave/682                                   \nsda           7.3T    1 disk                                                            MG06ACA800E\n└─sda1        7.3T    1 part xfs      /media/kebap/a3730efc-c3c5-4c3d-8099-a9a194c06907 \nnvme0n1     931.5G    0 disk                                                            Samsung SSD 980 1TB\n├─nvme0n1p1   122G    0 part ext4     /                                                 \n├─nvme0n1p2     1G    0 part vfat     /boot/efi                                         \n└─nvme0n1p3 808.4G    0 part ext4     /home",
+  "cuda": {
+    "name": "NVIDIA RTX A5000",
+    "free_gib": 18.5198974609375,
+    "total_gib": 23.5419921875
+  }
+}

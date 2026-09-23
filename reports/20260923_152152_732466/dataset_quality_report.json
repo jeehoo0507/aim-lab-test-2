@@ -1,0 +1,106 @@
+{
+  "candidates": 12903,
+  "duplicates": [
+    {
+      "id": 8548,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 130074,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 255633,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 281455,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 285607,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 308264,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 328295,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 343511,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 343629,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 381709,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 391145,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 393423,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 413922,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 422508,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 425035,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 461128,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 467154,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 472836,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 478056,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 480415,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 486686,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 504891,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 525189,
+      "reason": "decoded_or_perceptual_duplicate"
+    },
+    {
+      "id": 565722,
+      "reason": "decoded_or_perceptual_duplicate"
+    }
+  ],
+  "invalid": [],
+  "train_per_class": 600,
+  "val_per_class": 100,
+  "test": 533,
+  "near_duplicate_rule": "64-bit dHash Hamming <=4, plus decoded RGB SHA256"
+}
