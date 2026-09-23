@@ -14,8 +14,13 @@ class CocoSubset(Dataset):
     def __init__(self, root, split, train=False, threshold=0.5):
         self.root = Path(root)
         self.manifest = json.loads((self.root / "manifest.json").read_text())
-        self.records = [r for r in self.manifest["images"]
-                        if (r["probe"] if split == "probe" else r["split"] == split)]
+        if split == "probe":
+            matches = lambda row: row["probe"]
+        elif split == "val_fit":
+            matches = lambda row: row["split"] == "val" and not row["probe"]
+        else:
+            matches = lambda row: row["split"] == split
+        self.records = [row for row in self.manifest["images"] if matches(row)]
         if not self.records:
             raise ValueError(f"Empty {split} split")
         self.train, self.threshold = train, threshold

@@ -1,0 +1,21 @@
+{
+  "data_root": "data/coco_single",
+  "output_root": "outputs/adaptive200",
+  "device": "cuda",
+  "epochs": 200,
+  "teacher_epochs": 30,
+  "batch_size": 32,
+  "accumulation_steps": 4,
+  "num_workers": 0,
+  "num_threads": 2,
+  "scratch_lr": 0.0005,
+  "pretrained_lr": 0.00005,
+  "teacher_lr": 0.00005,
+  "checkpoint_every": 10,
+  "diagnostic_epochs": [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200],
+  "diagnostic_repeats": 3,
+  "validation_exclude_probe": true,
+  "gate_interval": 10,
+  "gate_min_epoch": 30,
+  "gate_repeats": 3
+}

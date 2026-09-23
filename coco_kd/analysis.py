@@ -20,6 +20,8 @@ NAMES = {"ce": "CE", "full": "Full KD", "random": "Random mask", "student": "Mas
          "random_to_student_20": "Random mask to MaskedKD @20",
          "random_to_student_50": "Random mask to MaskedKD @50",
          "random_rescue_to_student_20": "Random rescue to MaskedKD @20"}
+NAMES.update({"adaptive_random_to_low_10": "Adaptive Random10 to Low10",
+              "adaptive_random_to_student": "Adaptive Random10 to MaskedKD"})
 
 
 def correction_summary(frame):
@@ -130,7 +132,7 @@ def analyze(output_root):
     (destination / "per_image").mkdir(exist_ok=True)
     (destination / "per_image_counterfactual").mkdir(exist_ok=True)
     debug = False
-    curves, probes, results, counterfactual, corrections = [], [], [], [], []
+    curves, probes, results, counterfactual, corrections, gates = [], [], [], [], [], []
     for run in sorted(root.glob("seed_*/*/*")):
         if not (run / "result.json").exists():
             continue
@@ -140,12 +142,22 @@ def analyze(output_root):
         run_key = {"seed": seed, "initialization": initialization, "method": method}
         for h in json.loads((run / "history.json").read_text()):
             curves.append({**run_key, "epoch": h["epoch"], "lr": h["lr"],
+                           "active_method": h.get("active_method", method),
                            "val_macro_accuracy": h["validation"]["macro_accuracy"],
                            "val_accuracy": h["validation"]["accuracy"], "train_loss": h["train"]["loss"],
                            "optimizer_updates": h["train"]["optimizer_updates"],
                            "train_seconds": h["train"]["seconds"], "epoch_seconds_with_probe": h["epoch_seconds_with_probe"],
                            "swaps": h["train"]["swaps"], "added_foreground": h["train"]["added_foreground"],
                            "removed_foreground": h["train"]["removed_foreground"]})
+            if h.get("gate"):
+                gates.append({**run_key, "epoch": h["epoch"], "active_method": h["active_method"],
+                              "favorable": h["gate"]["favorable"],
+                              "diagnostic_seconds": h["gate"]["diagnostic_seconds"],
+                              "teacher_full_image_passes": h["gate"]["teacher_full_image_passes"],
+                              "teacher_98_image_passes": h["gate"]["teacher_98_image_passes"],
+                              "kl_gain": h["gate"]["kl_gain"],
+                              "true_logp_gain": h["gate"]["true_logp_gain"],
+                              "flip_gain": h["gate"]["flip_gain"]})
         image_frames, counter_frames = [], []
         for file in sorted((run / "probe").glob("epoch_*.npz")):
             if "counterfactual" in file.name:
@@ -192,7 +204,7 @@ def analyze(output_root):
                                 **{f"class_{i}": a for i, a in enumerate(value["per_class_accuracy"])}})
     frames = {"learning_curves": pd.DataFrame(curves), "probe_curves": pd.DataFrame(probes),
               "test_results": pd.DataFrame(results), "counterfactual": pd.DataFrame(counterfactual),
-              "error_correction": pd.DataFrame(corrections)}
+              "error_correction": pd.DataFrame(corrections), "gate_history": pd.DataFrame(gates)}
     frames["paired_seed_differences"] = paired_differences(frames["test_results"])
     frames["convergence"] = convergence_summary(frames["learning_curves"])
     for name, frame in frames.items():

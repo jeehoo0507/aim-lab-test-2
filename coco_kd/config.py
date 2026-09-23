@@ -7,7 +7,8 @@ METHODS = ("ce", "full", "random", "student", "random_rescue_10",
 # Opt-in follow-up; keep the original seven-method pipeline unchanged.
 TRAIN_METHODS = (*METHODS, "random_anneal_10", "full_to_student_20", "full_to_student_50",
                  "random_to_student_10", "random_to_student_20", "random_to_student_50",
-                 "random_rescue_to_student_20")
+                 "random_rescue_to_student_20", "adaptive_random_to_low_10",
+                 "adaptive_random_to_student")
 CLASSES = ("giraffe", "airplane", "clock", "zebra", "train", "bird",
            "elephant", "toilet", "cow", "bear")
 
@@ -43,6 +44,10 @@ class Config:
     output_warning_gb: float = 10.0
     diagnostic_epochs: tuple = (0, 10, 25, 50, 75, 100)
     diagnostic_repeats: int = 5
+    validation_exclude_probe: bool = False
+    gate_interval: int = 10
+    gate_min_epoch: int = 30
+    gate_repeats: int = 3
     student_init: str = "imagenet"
     teacher_pretrained: bool = True
     amp: bool = True
@@ -59,13 +64,16 @@ class Config:
             raise ValueError(f"Unknown config keys: {sorted(unknown)}")
         cfg = cls(**values)
         for key in ("num_classes", "batch_size", "eval_batch_size", "accumulation_steps",
-                    "epochs", "teacher_epochs", "num_threads", "checkpoint_every", "diagnostic_repeats"):
+                    "epochs", "teacher_epochs", "num_threads", "checkpoint_every", "diagnostic_repeats",
+                    "gate_interval", "gate_repeats"):
             if getattr(cfg, key) < 1:
                 raise ValueError(f"{key} must be positive")
         if cfg.num_classes < 2 or cfg.keep_tokens != 98:
             raise ValueError("Use at least 2 classes and 98 kept patches for this experiment")
         if cfg.num_workers < 0 or cfg.warmup_epochs < 0:
             raise ValueError("Invalid worker/warmup count")
+        if cfg.gate_min_epoch < 0:
+            raise ValueError("gate_min_epoch must be non-negative")
         if cfg.student_init not in ("scratch", "imagenet") or cfg.model_scale not in ("debug", "deit"):
             raise ValueError("Invalid initialization/model scale")
         if not 0 < cfg.foreground_threshold <= 1 or not 0 <= cfg.kd_alpha <= 1 or cfg.temperature <= 0:

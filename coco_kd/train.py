@@ -10,6 +10,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 
 from .config import TRAIN_METHODS
+from .adaptive import ADAPTIVE_TARGETS, GateProbe, update_gate
 from .data import CocoSubset, loader
 from .masking import binary_mask, select_tokens
 from .metrics import classification
@@ -176,17 +177,21 @@ def _train(cfg, role, method, directory, stop_after):
         del source
     optimizer, scaler = optimizer_for(model, cfg), torch.amp.GradScaler("cuda", enabled=cfg.amp and device.type == "cuda")
     start, best_score, best_epoch, best_weights, history = 0, -1.0, 0, None, []
+    gate_state = {"favorable_streak": 0, "switched_after_epoch": None}
     if state:
         model.load_state_dict(state["model"])
         optimizer.load_state_dict(state["optimizer"])
         scaler.load_state_dict(state["scaler"])
         start, best_score, best_epoch = state["epoch"], state["best_score"], state["best_epoch"]
         history, best_weights = state["history"], state["best_model"]
+        gate_state = state.get("gate_state", gate_state)
         print(f"RESUME {directory} after epoch {start}", flush=True)
     train_data = CocoSubset(cfg.data_root, "train", train=True, threshold=cfg.foreground_threshold)
-    validation = CocoSubset(cfg.data_root, "val", threshold=cfg.foreground_threshold)
+    validation = CocoSubset(cfg.data_root, "val_fit" if cfg.validation_exclude_probe else "val",
+                            threshold=cfg.foreground_threshold)
     epochs = cfg.teacher_epochs if role == "teacher" else cfg.epochs
     probe = Probe(cfg, directory, teacher, device) if teacher is not None else None
+    gate_probe = GateProbe(cfg, directory, teacher, device) if method in ADAPTIVE_TARGETS else None
     base = {"config": cfg.to_dict(), "role": role, "method": method,
             "metadata_sha256": digest, "teacher_sha256": teacher_hash, "code_sha256": code_hash,
             "initial_model_sha256": initial_hash}
@@ -197,7 +202,7 @@ def _train(cfg, role, method, directory, stop_after):
         del state
     elif probe:
         # Epoch-0 raw diagnostics are sufficient; the deterministic initialization can be reconstructed.
-        probe.log(model, 0, method)
+        probe.log(model, 0, "random_rescue_10" if gate_probe else method)
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
     for epoch in range(start + 1, epochs + 1):
@@ -208,10 +213,16 @@ def _train(cfg, role, method, directory, stop_after):
         lr = learning_rate(cfg, epoch, epochs, role)
         for group in optimizer.param_groups:
             group["lr"] = lr
-        training = train_epoch(model, teacher, train_data, optimizer, scaler, cfg, device, method, epoch)
+        active_method = (ADAPTIVE_TARGETS[method] if gate_state["switched_after_epoch"] is not None
+                         else "random_rescue_10") if gate_probe else method
+        training = train_epoch(model, teacher, train_data, optimizer, scaler, cfg, device, active_method, epoch)
         val = evaluate(model, validation, cfg, device, directory / "validation" / f"epoch_{epoch:03d}.npz")
         if probe:
-            probe.log(model, epoch, method)
+            probe.log(model, epoch, active_method)
+        gate_metrics = None
+        if gate_probe and gate_state["switched_after_epoch"] is None and epoch % cfg.gate_interval == 0:
+            gate_metrics = gate_probe.measure(model, epoch, ADAPTIVE_TARGETS[method])
+            gate_state = update_gate(gate_state, gate_metrics, cfg)
         if val["macro_accuracy"] is None:
             raise ValueError("All classes required in validation")
         score = val["macro_accuracy"]
@@ -220,25 +231,32 @@ def _train(cfg, role, method, directory, stop_after):
             save_checkpoint(directory / "best.pt", {**base, "epoch": epoch, "model": best_weights})
         peak = torch.cuda.max_memory_allocated(device) / 1024**3 if device.type == "cuda" else 0
         history.append({"epoch": epoch, "lr": lr, "train": training, "validation": val,
+                        "active_method": active_method, "gate": gate_metrics,
                         "epoch_seconds_with_probe": time.monotonic() - begun, "peak_allocated_gib": peak})
         payload = {**base, "model": cpu_state(model), "epoch": epoch}
         if epoch % cfg.checkpoint_every == 0 and epoch < epochs:
             save_checkpoint(directory / f"epoch_{epoch:03d}.pt", payload)
         # Full resume state only for latest epoch; periodic snapshots are weights only.
-        resume_payload = {**payload, "optimizer": optimizer.state_dict(),
+        resume_payload = {**payload, "optimizer": optimizer.state_dict(), "gate_state": gate_state,
                         "scaler": scaler.state_dict(), "best_model": best_weights, "best_epoch": best_epoch,
                         "best_score": best_score, "history": history}
         save_checkpoint(directory / "last.pt", resume_payload)
         if role == "student" and method == "student" and epoch == 50:
             save_checkpoint(directory / "resume_050.pt", resume_payload)
         write_json(directory / "history.json", history)
-        print(f"{directory.name} {epoch}/{epochs}: val macro={score:.4f}, lr={lr:.3g}, swaps={training['swaps']:.1f}, train={training['seconds']:.1f}s, peak={peak:.2f}GiB", flush=True)
+        print(f"{directory.name} {epoch}/{epochs}: mask={active_method}, val macro={score:.4f}, "
+              f"lr={lr:.3g}, swaps={training['swaps']:.1f}, train={training['seconds']:.1f}s, "
+              f"peak={peak:.2f}GiB, switch_after={gate_state['switched_after_epoch']}", flush=True)
         if stop_after is not None and epoch >= stop_after and epoch < epochs:
             return directory / "last.pt"
     if probe:
         model.load_state_dict(best_weights)
-        probe.log(model, best_epoch, method, name="best")
+        best_method = (ADAPTIVE_TARGETS[method] if any(h["epoch"] == best_epoch and
+                       h["active_method"] == ADAPTIVE_TARGETS[method] for h in history)
+                       else "random_rescue_10") if gate_probe else method
+        probe.log(model, best_epoch, best_method, name="best")
     result = {**base, "best_epoch": best_epoch, "best_validation_macro": best_score, "last_epoch": epochs,
+              "gate_state": gate_state if gate_probe else None,
               "seed": cfg.seed, "student_init": cfg.student_init, "partial_training": cfg.max_train_batches is not None,
               "checkpoint_selection": "maximum validation macro accuracy; earliest epoch breaks ties",
               "test_evaluated": False, "seconds_total": sum(r["epoch_seconds_with_probe"] for r in history)}

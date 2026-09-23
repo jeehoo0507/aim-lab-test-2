@@ -1,10 +1,12 @@
 # MaskedKD 실험 2 — COCO 자연 이미지 분류
 
-Waterbirds 실험 1과 별도 저장소다. **코드와 실행 절차를 준비한 상태이며, 실제 COCO 학습 결과는 아직 없다.**
+Waterbirds 실험 1과 별도 저장소다. COCO 실험 2의 학습 결과와 후속 비교가 `reports/`에 있다.
 
 검증 질문: 일반 자연 이미지에서도 student가 선택한 teacher 입력의 정보 제한이 학습 후반까지 남는가? 선택을 바꾸면 teacher 출력뿐 아니라 student 오류 교정·학습 속도·최종 분류 성능도 좋아지는가?
 
 [최종 실험 설계](docs/EXPERIMENT_2.md) · [저장 자료와 해석](docs/ARTIFACTS.md)
+
+후속 200에포치 비교: [신뢰도 진단에 따른 Random10→Low10/MaskedKD 전환 및 병렬 실행](docs/ADAPTIVE_200.md).
 
 추가 비교: [Random 10→0 vs MaskedKD 실행 안내](docs/RANDOM_ANNEAL.md). `bash setup.sh anneal --jobs 4`로 기존 teacher를 재사용하여 seed 0의 두 초기화·두 방법만 별도 경로에서 학습·평가한다. 완료 후 `bash setup.sh anneal-export --push`로 결과를 공유한다.
 

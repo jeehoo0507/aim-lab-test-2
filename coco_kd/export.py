@@ -17,7 +17,7 @@ def export_results(cfg, push=False):
     destination = (Path("reports/smoke") if cfg.model_scale == "debug" else Path("reports")) / tag
     destination.mkdir(parents=True)
     shutil.copytree(analysis, destination / "analysis")
-    for name in ("preflight.json", "benchmark.json", "comparison_protocol.json"):
+    for name in ("preflight.json", "benchmark.json", "comparison_protocol.json", "adaptive_protocol.json"):
         if (root / name).exists():
             shutil.copy2(root / name, destination / name)
     # Snapshot only compact data: full probe tensors and weights remain on the server.
