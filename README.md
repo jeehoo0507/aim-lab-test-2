@@ -10,6 +10,8 @@ Waterbirds 실험 1과 별도 저장소다. COCO 실험 2의 학습 결과와 �
 
 추가 비교: [Random 10→0 vs MaskedKD 실행 안내](docs/RANDOM_ANNEAL.md). `bash setup.sh anneal --jobs 4`로 기존 teacher를 재사용하여 seed 0의 두 초기화·두 방법만 별도 경로에서 학습·평가한다. 완료 후 `bash setup.sh anneal-export --push`로 결과를 공유한다.
 
+빠른 후속 실험: [100-epoch 적응형 마스킹 파일럿](docs/ADAPTIVE_100_QUICK.md). 기존 실험 2의 세 기준 모델을 재사용하고 전환 방식 네 실행만 병렬로 학습한다.
+
 ## 구성
 
 - COCO 2017: 이미지에 주석된 객체 종류가 하나인 10클래스. 같은 종류의 여러 객체는 허용.
