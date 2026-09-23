@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from .data import CocoSubset, loader
-from .masking import binary_mask, select_tokens
+from .masking import binary_mask, effective_method, select_tokens
 from .utils import autocast, save_npz, write_json
 
 DIAGNOSTICS = ("student", "random", "random_rescue_10", "foreground_rescue_10",
@@ -24,6 +24,7 @@ class Probe:
                    "randomness": "independent image/method/repeat streams, fixed across epochs and training seeds"})
 
     def choose(self, attention, method, foreground, ids, repeat=0, epoch=None):
+        method = effective_method(method, epoch)
         if method in ("ce", "full"):
             return torch.arange(196, device=self.device).expand(len(ids), -1), torch.zeros(len(ids), device=self.device, dtype=torch.long)
         chosen, counts = [], []
@@ -57,7 +58,7 @@ class Probe:
                 raw, _ = select_tokens(attention, "student")
                 actual, swaps = self.choose(attention, method, fg, batch["sample_id"], epoch=epoch)
                 raw_logits = self.teacher(x, raw).float().cpu().numpy()
-                actual_logits = full if method in ("ce", "full") else self.teacher(x, actual).float().cpu().numpy()
+                actual_logits = full if effective_method(method, epoch) in ("ce", "full") else self.teacher(x, actual).float().cpu().numpy()
             row = {key: batch[key].numpy() for key in ("sample_id", "label", "foreground", "coverage")}
             row.update(attention=attention.float().cpu().numpy(), raw_indices=raw.cpu().numpy().astype(np.int16),
                        actual_indices=actual.cpu().numpy().astype(np.int16), swaps=swaps.cpu().numpy(),

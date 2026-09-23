@@ -14,7 +14,8 @@ from .utils import write_json
 
 NAMES = {"ce": "CE", "full": "Full KD", "random": "Random mask", "student": "MaskedKD",
          "random_rescue_10": "Random rescue 10", "foreground_rescue_10": "FG rescue 10",
-         "low_score_rescue_10": "Low-score rescue 10", "random_anneal_10": "Random 10 to 0"}
+         "low_score_rescue_10": "Low-score rescue 10", "random_anneal_10": "Random 10 to 0",
+         "full_to_student_20": "Full to MaskedKD @20", "full_to_student_50": "Full to MaskedKD @50"}
 
 
 def correction_summary(frame):

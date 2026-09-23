@@ -2,8 +2,9 @@ import numpy as np
 import pytest
 import torch
 
-from coco_kd.masking import binary_mask, select_tokens
+from coco_kd.masking import binary_mask, effective_method, select_tokens
 from coco_kd.metrics import classification, selection
+from coco_kd.probe import Probe
 
 
 @pytest.mark.parametrize("mode", ["student", "random", "random_rescue_10", "low_score_rescue_10", "foreground_rescue_10", "random_matched"])
@@ -37,6 +38,28 @@ def test_fixed_random_does_not_use_ground_truth_and_matched_handles_no_fg():
         idx, swaps = select_tokens(attn, mode, foreground=torch.zeros(3, 196, dtype=torch.bool))
         assert not swaps.any()
         assert torch.equal(idx, attn.topk(98, 1).indices)
+
+
+@pytest.mark.parametrize("method,switch", [("full_to_student_20", 20), ("full_to_student_50", 50)])
+def test_full_to_student_switch_boundary(method, switch):
+    attn = torch.rand(2, 196)
+    assert effective_method(method, switch) == "full"
+    assert effective_method(method, switch + 1) == "student"
+    before, before_swaps = select_tokens(attn, method, epoch=switch)
+    after, after_swaps = select_tokens(attn, method, epoch=switch + 1)
+    assert before is None and not before_swaps.any()  # teacher sees all 196
+    assert torch.equal(after, attn.topk(98, 1).indices)
+    assert not after_swaps.any()
+    probe = Probe.__new__(Probe)
+    probe.device = torch.device("cpu")
+    ids = torch.arange(2)
+    foreground = torch.zeros_like(attn, dtype=torch.bool)
+    full_indices, _ = probe.choose(attn, method, foreground, ids, epoch=switch)
+    masked_indices, _ = probe.choose(attn, method, foreground, ids, epoch=switch + 1)
+    assert torch.equal(full_indices, torch.arange(196).expand(2, -1))
+    assert torch.equal(masked_indices, after)
+    with pytest.raises(ValueError, match="epoch"):
+        select_tokens(attn, method)
 
 
 def test_metric_zero_fg_and_accuracy():

@@ -1,6 +1,16 @@
 import torch
 
 
+def effective_method(method, epoch):
+    """Full teacher input through the switch epoch, then student top-98."""
+    switches = {"full_to_student_20": 20, "full_to_student_50": 50}
+    if method in switches:
+        if epoch is None:
+            raise ValueError("Switch schedule requires an epoch")
+        return "full" if epoch <= switches[method] else "student"
+    return method
+
+
 def annealed_swaps(epoch):
     """Fixed 100-epoch protocol: 10 through 20, linear integer decay, 0 from 80.
 
@@ -18,6 +28,7 @@ def select_tokens(attention, method, keep=98, foreground=None, generator=None, e
     Fixed-10 random/low-score rescues do NOT consult foreground labels.
     random_matched is a probe-only control with the same feasible count as FG.
     """
+    method = effective_method(method, epoch)
     budget = annealed_swaps(epoch) if method == "random_anneal_10" else 10
     if method == "random_anneal_10":
         method = "random_rescue_10"
