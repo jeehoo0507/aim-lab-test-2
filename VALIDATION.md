@@ -1,5 +1,14 @@
 # Implementation validation
 
+2026-09-25, frozen DINO attention pilot, Linux x86_64, Python 3.11.16, torch 2.5.1+cu124, CPU:
+
+- `python -m pytest -q`: **62 passed**, 14 existing Matplotlib/pyparsing deprecation warnings. `bash -n setup.sh`, CLI help and `git diff --check` passed.
+- Official DINO reference is pinned to `7c446df5b9f45747937fb0d72314eb9f7b66930a`. Untouched class definitions match the adapter's features, last-block head-mean CLS attention and top-98 selection.
+- Loaded the actual official DINO ViT-S/16 pretrained checkpoint (file SHA256 `1566d50496f27f52f07fea6094fa29b2fdd6fae89da65bdd3ebc3b24ef6b7eb7`) and verified those three outputs against the official full-size implementation on CPU. Selector tensor fingerprint: `acb98ef896cc94acceaed9db9ed40bf0fe7c6da5039bf31a18a5f73dbc58a438`.
+- Tests check exact 10-token replacement, no foreground-label dependence, epoch-50/51 boundary and 78+20 uniqueness, selector freezing/RNG isolation, bit-exact interrupted/resumed students, fixed DINO probe selection with changing student attention, and batch/seed-independent diagnostic masks.
+- Synthetic integration exercised the actual three-process DINO benchmark and training launcher, rejection of mismatched teacher/config, test separation until all three runs finish, best/last evaluation, paired baseline comparison CSVs and compact report export.
+- No real COCO GPU run was performed locally. DINO accuracy gains, runtime and VRAM remain to be measured on the server. This pilot uses DINO as a frozen patch selector; it does not implement DINO self-supervised training.
+
 2026-09-25, DeiT-Base teacher pilot, Linux x86_64, Python 3.11.16, torch 2.5.1+cu124, CPU:
 
 - `uv sync --frozen`, `bash -n setup.sh`, `git diff --check`: passed.

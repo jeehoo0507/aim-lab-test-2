@@ -39,6 +39,10 @@ case "$mode" in
   teacher-base-benchmark) .venv/bin/python -m coco_kd.teacher_base benchmark "$@" ;;
   teacher-base-evaluate) .venv/bin/python -m coco_kd.teacher_base evaluate "$@" ;;
   teacher-base-export) .venv/bin/python -m coco_kd.teacher_base export "$@" ;;
+  dino) .venv/bin/python -m coco_kd.dino_pilot run "$@" ;;
+  dino-benchmark) .venv/bin/python -m coco_kd.dino_pilot benchmark "$@" ;;
+  dino-evaluate) .venv/bin/python -m coco_kd.dino_pilot evaluate "$@" ;;
+  dino-export) .venv/bin/python -m coco_kd.dino_pilot export "$@" ;;
   anneal) .venv/bin/python -m coco_kd.anneal run "$@" ;;
   anneal-export) .venv/bin/python -m coco_kd.anneal export "$@" ;;
   adaptive) .venv/bin/python scripts/run_adaptive200.py run "$@" ;;
@@ -54,5 +58,5 @@ case "$mode" in
       --config configs/random_low_sweep.json --seeds 1 2 --inits scratch \
       --methods adaptive_random_to_low_10 random_rescue_to_low_70 random_low_mixed_10 "$@"
     ;;
-  *) echo "Usage: bash setup.sh [check|prepare|benchmark|pilot|run|evaluate|export|teacher-base|teacher-base-benchmark|teacher-base-evaluate|teacher-base-export|anneal|anneal-export|adaptive|adaptive-evaluate|random-low-sweep|random-low-evaluate]"; exit 2 ;;
+  *) echo "Usage: bash setup.sh [check|prepare|benchmark|pilot|run|evaluate|export|teacher-base|teacher-base-benchmark|teacher-base-evaluate|teacher-base-export|dino|dino-benchmark|dino-evaluate|dino-export|anneal|anneal-export|adaptive|adaptive-evaluate|random-low-sweep|random-low-evaluate]"; exit 2 ;;
 esac

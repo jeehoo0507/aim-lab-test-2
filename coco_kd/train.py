@@ -12,6 +12,7 @@ from tqdm import tqdm
 from .config import TRAIN_METHODS
 from .adaptive import ADAPTIVE_TARGETS, GateProbe, update_gate
 from .data import CocoSubset, loader
+from .dino_attention import build_selector, selection_attention
 from .masking import binary_mask, effective_method, select_tokens
 from .metrics import classification
 from .models import build_model
@@ -71,7 +72,7 @@ def evaluate(model, dataset, cfg, device, destination=None):
     return classification(arrays["logits"], arrays["label"], cfg.num_classes)
 
 
-def train_epoch(model, teacher, dataset, optimizer, scaler, cfg, device, method, epoch):
+def train_epoch(model, teacher, dataset, optimizer, scaler, cfg, device, method, epoch, selector=None):
     model.train()
     seed_all(cfg.seed + epoch * 100003)
     mask_rng = torch.Generator(device=device).manual_seed(cfg.seed + epoch * 200003)
@@ -87,6 +88,7 @@ def train_epoch(model, teacher, dataset, optimizer, scaler, cfg, device, method,
         x, y, foreground = batch["image"].to(device), batch["label"].to(device), batch["foreground"].to(device)
         with autocast(cfg, device):
             logits, attention = model(x, return_attention=True)
+            attention = selection_attention(selector, x, attention)
             targets, indices, swaps = None, None, None
             if teacher is not None and method not in ("ce", "teacher"):
                 indices, swaps = select_tokens(attention, method, foreground=foreground, generator=mask_rng, epoch=epoch)
@@ -132,6 +134,8 @@ def train(cfg, role="student", method="student", stop_after=None):
         raise ValueError("Unknown role or method")
     if method == "random_anneal_10" and cfg.model_scale != "debug" and cfg.epochs != 100:
         raise ValueError("random_anneal_10 is a fixed 100-epoch protocol; use a separate design for other lengths")
+    if method == "dino_paper_late" and cfg.model_scale != "debug" and cfg.epochs != 100:
+        raise ValueError("dino_paper_late uses the fixed 100-epoch / after-50 schedule")
     directory = run_path(cfg, role, method)
     with RunLock(directory / ".run.lock"):
         return _train(cfg, role, method, directory, stop_after)
@@ -144,6 +148,10 @@ def _train(cfg, role, method, directory, stop_after):
     code_hash = source_fingerprint()
     teacher_file = run_path(cfg, "teacher") / "best.pt" if role == "student" else None
     teacher_hash = sha256(teacher_file) if teacher_file else None
+    selector = build_selector(cfg, method) if role == "student" else None
+    selector_hash = model_fingerprint(selector) if selector is not None else None
+    if selector is not None:
+        selector = selector.to(device)
     saved_config = directory / "config.json"
     if saved_config.exists():
         compatible_config(json.loads(saved_config.read_text()), cfg.to_dict())
@@ -154,6 +162,8 @@ def _train(cfg, role, method, directory, stop_after):
             raise ValueError("Completed run data/teacher changed; use a new output root")
         if result.get("code_sha256") != code_hash:
             raise ValueError("Training code changed since completion; use a new output root")
+        if result.get("selector_sha256") != selector_hash:
+            raise ValueError("DINO selector changed since completion")
         print(f"REUSED complete {directory}", flush=True)
         return directory / "best.pt"
     write_json(saved_config, cfg.to_dict())
@@ -162,6 +172,8 @@ def _train(cfg, role, method, directory, stop_after):
         raise ValueError("Resume data/teacher mismatch")
     if state and state.get("code_sha256") != code_hash:
         raise ValueError("Training code changed since checkpoint; use a new output root")
+    if state and state.get("selector_sha256") != selector_hash:
+        raise ValueError("DINO selector changed since checkpoint")
     seed_all(cfg.seed)
     pretrained = (cfg.teacher_pretrained if role == "teacher" else cfg.student_init == "imagenet") and state is None
     model = build_model(role, cfg, pretrained=pretrained).to(device)
@@ -190,11 +202,13 @@ def _train(cfg, role, method, directory, stop_after):
     validation = CocoSubset(cfg.data_root, "val_fit" if cfg.validation_exclude_probe else "val",
                             threshold=cfg.foreground_threshold)
     epochs = cfg.teacher_epochs if role == "teacher" else cfg.epochs
-    probe = Probe(cfg, directory, teacher, device) if teacher is not None else None
+    probe = Probe(cfg, directory, teacher, device, selector=selector) if teacher is not None else None
     gate_probe = GateProbe(cfg, directory, teacher, device) if method in ADAPTIVE_TARGETS else None
     base = {"config": cfg.to_dict(), "role": role, "method": method,
             "metadata_sha256": digest, "teacher_sha256": teacher_hash, "code_sha256": code_hash,
             "initial_model_sha256": initial_hash}
+    if selector is not None:
+        base.update(selector_sha256=selector_hash, selection_source="frozen_dino_vits16")
     if state:
         # last.pt is the committed epoch; undo a best/history write from an interrupted later epoch.
         save_checkpoint(directory / "best.pt", {**base, "epoch": best_epoch, "model": best_weights})
@@ -215,7 +229,7 @@ def _train(cfg, role, method, directory, stop_after):
             group["lr"] = lr
         active_method = ((ADAPTIVE_TARGETS[method] if gate_state["switched_after_epoch"] is not None
                           else "random_rescue_10") if gate_probe else effective_method(method, epoch))
-        training = train_epoch(model, teacher, train_data, optimizer, scaler, cfg, device, active_method, epoch)
+        training = train_epoch(model, teacher, train_data, optimizer, scaler, cfg, device, active_method, epoch, selector=selector)
         val = evaluate(model, validation, cfg, device, directory / "validation" / f"epoch_{epoch:03d}.npz")
         if probe:
             probe.log(model, epoch, active_method)

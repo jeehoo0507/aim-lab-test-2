@@ -14,6 +14,7 @@ import torch
 
 from .config import Config, METHODS
 from .data import CocoSubset, loader, validate_manifest
+from .dino_attention import DINO_METHODS, build_selector, selection_attention
 from .masking import select_tokens
 from .models import build_model
 from .probe import Probe
@@ -51,6 +52,9 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes, measu
         for method in modes:
             role = "teacher" if method == "teacher" else "student"
             model = build_model(role, cfg).to(device)
+            selector = build_selector(cfg, method)
+            if selector is not None:
+                selector = selector.to(device)
             teacher = build_model("teacher", cfg).to(device).requires_grad_(False).eval() if role == "student" else None
             optimizer = optimizer_for(model, cfg)
             scaler = torch.amp.GradScaler("cuda", enabled=cfg.amp and device.type == "cuda")
@@ -72,9 +76,10 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes, measu
                     fg = batch["foreground"].to(device)
                     with autocast(cfg, device):
                         logits, attention = model(x, return_attention=True)
+                        attention = selection_attention(selector, x, attention)
                         targets = None
                         if method not in ("ce", "teacher"):
-                            indices, _ = select_tokens(attention, method, foreground=fg, generator=generator)
+                            indices, _ = select_tokens(attention, method, foreground=fg, generator=generator, epoch=100)
                             targets = teacher(x, indices)
                         loss, _, _ = distillation_loss(logits, y, targets, cfg)
                     scaler.scale(loss / cfg.accumulation_steps).backward()
@@ -115,7 +120,7 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes, measu
                 (work / "last.pt").unlink()
                 barrier.wait(timeout=180)
             if role == "student" and (method == "student" or measure_all):
-                probe = Probe(replace(cfg, epochs=1000000, diagnostic_epochs=[]), work, teacher, device)
+                probe = Probe(replace(cfg, epochs=1000000, diagnostic_epochs=[]), work, teacher, device, selector=selector)
                 probe.log(model, 1, method)  # Populate full-teacher cache before timing.
                 _sync(device)
                 barrier.wait(timeout=180)
@@ -137,7 +142,7 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes, measu
             row["peak_allocated_gib"] = torch.cuda.max_memory_allocated(device) / 1024**3 if device.type == "cuda" else 0.0
             rows.append(row)
             queue.put({"event": "progress", "rank": rank, "method": method})
-            del model, teacher, optimizer, scaler, batches, iterator, update
+            del model, teacher, selector, optimizer, scaler, batches, iterator, update
             gc.collect()
             if device.type == "cuda":
                 torch.cuda.empty_cache()
@@ -156,7 +161,7 @@ def run_trial(cfg, jobs, warmup=2, steps=8, modes=("teacher", *METHODS),
     # Heterogeneous student jobs must execute the same validation/checkpoint/probe
     # phases so that their synchronization barriers cannot become misaligned.
     if parallel_methods is not None:
-        if len(parallel_methods) != jobs or any(m not in METHODS for m in parallel_methods):
+        if len(parallel_methods) != jobs or any(m not in (*METHODS, *DINO_METHODS) for m in parallel_methods):
             raise ValueError("parallel_methods must contain one baseline student method per worker")
         measure_all = True
     context = mp.get_context("spawn")

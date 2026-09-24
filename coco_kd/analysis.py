@@ -25,6 +25,8 @@ NAMES.update({"adaptive_random_to_low_10": "Adaptive Random10 to Low10",
               "random_rescue_to_low_50": "Random10 to Low10 @50",
               "random_rescue_to_low_70": "Random10 to Low10 @70",
               "random_low_mixed_10": "Random/Low outgoing mix 10"})
+NAMES.update({"dino": "DINO top 98", "dino_random_rescue_10": "DINO + Random10",
+              "dino_paper_late": "DINO + paper late mix"})
 
 
 def correction_summary(frame):
@@ -233,8 +235,8 @@ def figures(frames, destination, debug=False):
             for ax, frame, value, ylabel, factor in (
                 (axes[0, 0], c, "val_macro_accuracy", "Validation macro accuracy (%)", 100),
                 (axes[0, 1], p, "teacher_mask_kl", "Teacher KL (full || actual input)", 1),
-                (axes[1, 0], p, "raw_background_ratio", "Student's own background selection (%)", 100),
-                (axes[1, 1], p, "raw_foreground_missing", "Student's own foreground missing (%)", 100)):
+                (axes[1, 0], p, "raw_background_ratio", "Selector's top-98 background (%)", 100),
+                (axes[1, 1], p, "raw_foreground_missing", "Selector's top-98 foreground missing (%)", 100)):
                 if frame.empty:
                     continue
                 groups = frame.groupby("epoch")[value]

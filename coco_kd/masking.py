@@ -52,6 +52,26 @@ def select_tokens(attention, method, keep=98, foreground=None, generator=None, e
     random_matched is a probe-only control with the same feasible count as FG.
     """
     method = effective_method(method, epoch)
+    if method == "dino":
+        method = "student"
+    elif method == "dino_random_rescue_10":
+        method = "random_rescue_10"
+    elif method == "dino_paper_late":
+        if epoch is None or epoch < 0:
+            raise ValueError("DINO paper schedule requires a nonnegative epoch")
+        if epoch <= 50:
+            method = "student"
+        else:
+            if keep != 98 or attention.shape[1] != 196:
+                raise ValueError("DINO paper control requires 196 patches and keep=98")
+            # Table 5: 40% high-attention + 10% random, in the later half.
+            # Round 196*.4 to 78; draw the remaining 20 from all other 118.
+            ranked = attention.detach().argsort(dim=1, descending=True)
+            top, pool = ranked[:, :78], ranked[:, 78:]
+            draws = torch.rand(pool.shape, device=attention.device, generator=generator).topk(20, 1).indices
+            chosen = torch.cat((top, pool.gather(1, draws)), dim=1)
+            original = torch.zeros_like(attention, dtype=torch.bool).scatter_(1, ranked[:, :98], True)
+            return chosen, (~original.gather(1, chosen)).sum(1)
     budget = annealed_swaps(epoch) if method == "random_anneal_10" else 10
     if method == "random_anneal_10":
         method = "random_rescue_10"

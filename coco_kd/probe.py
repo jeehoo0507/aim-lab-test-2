@@ -4,6 +4,7 @@ import numpy as np
 import torch
 
 from .data import CocoSubset, loader
+from .dino_attention import selection_attention
 from .masking import binary_mask, effective_method, select_tokens
 from .utils import autocast, save_npz, write_json
 
@@ -12,14 +13,16 @@ DIAGNOSTICS = ("student", "random", "random_rescue_10", "foreground_rescue_10",
 
 
 class Probe:
-    def __init__(self, cfg, directory, teacher, device):
+    def __init__(self, cfg, directory, teacher, device, selector=None):
         self.cfg, self.teacher, self.device = cfg, teacher, device
+        self.selector = selector
         self.dataset = CocoSubset(cfg.data_root, "probe", threshold=cfg.foreground_threshold)
         self.path = Path(directory) / "probe"
         self.full_cache = None
         write_json(self.path / "manifest.json", {"ids": [r["id"] for r in self.dataset.records],
                    "split": "val", "transform": "full_image_resize224_no_augmentation",
                    "selection": "last_layer_head_mean_CLS_to_patch_before_rescue",
+                   "selection_source": "frozen_dino_vits16" if selector is not None else "student",
                    "diagnostic_repeats": cfg.diagnostic_repeats,
                    "randomness": "independent image/method/repeat streams, fixed across epochs and training seeds"})
 
@@ -30,7 +33,8 @@ class Probe:
         chosen, counts = [], []
         # Match the original Random-10 stream at the start of the schedule.
         stream_method = "random_rescue_10" if method in ("random_anneal_10", "random_low_mixed_10") else method
-        index = DIAGNOSTICS.index(stream_method)
+        stream_method = {"dino": "student", "dino_random_rescue_10": "random_rescue_10"}.get(stream_method, stream_method)
+        index = (*DIAGNOSTICS, "dino_paper_late").index(stream_method)
         for i, sample_id in enumerate(ids):
             # Stable across batch size, epoch, initialization and training seed.
             seed = int(sample_id) * 1009 + 10000019 * index + 65537 * repeat
@@ -49,7 +53,8 @@ class Probe:
         for batch in loader(self.dataset, self.cfg):
             x, fg = batch["image"].to(self.device), batch["foreground"].to(self.device)
             with autocast(self.cfg, self.device):
-                logits, attention = model(x, return_attention=True)
+                logits, student_attention = model(x, return_attention=True)
+                attention = selection_attention(self.selector, x, student_attention)
                 if self.full_cache is None:
                     full, teacher_attention = self.teacher(x, return_attention=True)
                     full, teacher_attention = full.float().cpu().numpy(), teacher_attention.float().cpu().numpy()
@@ -66,13 +71,15 @@ class Probe:
                        student_logits=logits.float().cpu().numpy(), teacher_full_logits=full,
                        teacher_attention=teacher_attention, teacher_raw_logits=raw_logits,
                        teacher_actual_logits=actual_logits)
+            if self.selector is not None:
+                row["student_attention"] = student_attention.float().cpu().numpy()
             records.append(row)
             if detailed:
                 variants = {}
-                for mode in DIAGNOSTICS:
+                for mode in (*DIAGNOSTICS, "dino_paper_late") if self.selector is not None else DIAGNOSTICS:
                     all_indices, all_logits, all_swaps = [], [], []
                     for repeat in range(self.cfg.diagnostic_repeats):
-                        indices, swaps = self.choose(attention, mode, fg, batch["sample_id"], repeat)
+                        indices, swaps = self.choose(attention, mode, fg, batch["sample_id"], repeat, epoch=epoch)
                         with autocast(self.cfg, self.device):
                             output = self.teacher(x, indices)
                         all_indices.append(indices.cpu().numpy().astype(np.int16))

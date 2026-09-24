@@ -6,6 +6,10 @@ Waterbirds 실험 1과 별도 저장소다. COCO 실험 2의 학습 결과와 �
 
 [최종 실험 설계](docs/EXPERIMENT_2.md) · [저장 자료와 해석](docs/ARTIFACTS.md)
 
+DINO 후속 비교: [고정 DINO attention + Random10 / 논문 후반 혼합](docs/DINO_ATTENTION_PILOT.md).
+`bash setup.sh dino`로 기존 Base teacher를 재사용하고 DINO attention 기준 학생 3개를 벤치마크 후 병렬 학습한다.
+완료 후 `bash setup.sh dino-evaluate`, `bash setup.sh dino-export --push`로 평가·공유한다.
+
 Teacher 확대 파일럿: [DeiT-Base + Full KD / MaskedKD / Random10 세 방법 병렬](docs/TEACHER_BASE_PILOT.md).
 `bash setup.sh teacher-base`로 Base 전용 벤치마크 → teacher 30 epoch → seed 0 scratch student 3개 × 100 epoch를 실행한다.
 기존 Small 결과와 별도인 `outputs/teacher_base_pilot`에 저장한다.
