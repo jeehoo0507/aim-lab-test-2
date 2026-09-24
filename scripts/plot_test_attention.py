@@ -65,6 +65,13 @@ def choose(attention, sample_id, method, foreground):
     return select_tokens(attention, method, foreground=foreground, generator=generator)[0]
 
 
+def active_at_last(history, method):
+    # Experiment-2 baseline histories predate the active_method field.
+    if method.startswith("adaptive_"):
+        return history[-1]["active_method"]
+    return history[-1].get("active_method", method)
+
+
 @torch.inference_mode()
 def render_one(args, dataset, row, teacher, teacher_hash, device, output):
     index = next(i for i, item in enumerate(dataset.records) if item["id"] == row["id"])
@@ -87,7 +94,7 @@ def render_one(args, dataset, row, teacher, teacher_hash, device, output):
         if result["metadata_sha256"] != metadata_hash(cfg) or result["teacher_sha256"] != teacher_hash:
             raise ValueError(f"Dataset or teacher provenance mismatch: {path}")
         history = json.loads((path / "history.json").read_text())
-        active = history[-1]["active_method"]
+        active = active_at_last(history, method)
         if method != "adaptive_random_to_low_10" and active != expected_active:
             raise ValueError(f"Unexpected final masking method: {path}")
         state = load_checkpoint(path / "last.pt")

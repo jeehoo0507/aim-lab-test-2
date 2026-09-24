@@ -8,6 +8,7 @@ from coco_kd.config import Config
 from coco_kd.synthetic import synthetic_data
 from coco_kd.utils import metadata_hash, write_json
 from scripts.run_adaptive200 import BASELINES, check_existing_baselines, compare_quick, require_completed
+from scripts.plot_test_attention import active_at_last
 
 
 def make_results(tmp_path):
@@ -60,3 +61,12 @@ def test_quick_preflight_rejects_baseline_schedule_mismatch(tmp_path):
     bad = replace(cfg, epochs=200)
     with pytest.raises(ValueError, match="epoch 200"):
         check_existing_baselines(bad, original, [0], ["scratch"])
+
+
+def test_test_attention_supports_legacy_baseline_history():
+    assert active_at_last([{"epoch": 100}], "student") == "student"
+    assert active_at_last([{"epoch": 100}], "random_rescue_10") == "random_rescue_10"
+    assert active_at_last([{"epoch": 100, "active_method": "low_score_rescue_10"}],
+                          "adaptive_random_to_low_10") == "low_score_rescue_10"
+    with pytest.raises(KeyError, match="active_method"):
+        active_at_last([{"epoch": 100}], "adaptive_random_to_low_10")
