@@ -21,7 +21,10 @@ NAMES = {"ce": "CE", "full": "Full KD", "random": "Random mask", "student": "Mas
          "random_to_student_50": "Random mask to MaskedKD @50",
          "random_rescue_to_student_20": "Random rescue to MaskedKD @20"}
 NAMES.update({"adaptive_random_to_low_10": "Adaptive Random10 to Low10",
-              "adaptive_random_to_student": "Adaptive Random10 to MaskedKD"})
+              "adaptive_random_to_student": "Adaptive Random10 to MaskedKD",
+              "random_rescue_to_low_50": "Random10 to Low10 @50",
+              "random_rescue_to_low_70": "Random10 to Low10 @70",
+              "random_low_mixed_10": "Random/Low outgoing mix 10"})
 
 
 def correction_summary(frame):

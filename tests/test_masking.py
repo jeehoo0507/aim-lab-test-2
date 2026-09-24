@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from coco_kd.masking import binary_mask, effective_method, select_tokens
+from coco_kd.masking import binary_mask, effective_method, mixed_low_slots, select_tokens
 from coco_kd.metrics import classification, selection
 from coco_kd.probe import Probe
 
@@ -100,3 +100,39 @@ def test_metric_zero_fg_and_accuracy():
     result = classification([[1, 0], [1, 0], [0, 1]], [0, 1, 1], 2)
     assert result["accuracy"] == pytest.approx(2 / 3)
     assert result["macro_accuracy"] == .75
+
+
+@pytest.mark.parametrize("method,boundary", [("random_rescue_to_low_50", 50),
+                                               ("random_rescue_to_low_70", 70)])
+def test_fixed_random_to_low_boundary(method, boundary):
+    attention = torch.arange(196, dtype=torch.float32)[None]
+    assert effective_method(method, boundary) == "random_rescue_10"
+    assert effective_method(method, boundary + 1) == "low_score_rescue_10"
+    before, _ = select_tokens(attention, method, epoch=boundary, generator=torch.Generator().manual_seed(7))
+    random, _ = select_tokens(attention, "random_rescue_10", generator=torch.Generator().manual_seed(7))
+    assert torch.equal(before, random)
+    after, swaps = select_tokens(attention, method, epoch=boundary + 1,
+                                  generator=torch.Generator().manual_seed(7))
+    assert swaps.item() == 10
+    assert not binary_mask(after)[0, 98:108].any()
+    with pytest.raises(ValueError, match="epoch"):
+        select_tokens(attention, method)
+
+
+@pytest.mark.parametrize("epoch,low_count", [(50, 0), (51, 5), (70, 5), (71, 8), (100, 8)])
+def test_mixed_schedule_preserves_budget_and_low_score_removal(epoch, low_count):
+    attention = torch.arange(196, dtype=torch.float32)[None]
+    assert mixed_low_slots(epoch) == low_count
+    chosen, swaps = select_tokens(attention, "random_low_mixed_10", epoch=epoch,
+                                   generator=torch.Generator().manual_seed(7))
+    assert chosen.shape == (1, 98) and len(chosen[0].unique()) == 98
+    assert swaps.item() == 10
+    assert not binary_mask(chosen)[0, 98:98 + low_count].any()
+    if epoch == 50:
+        random, _ = select_tokens(attention, "random_rescue_10", generator=torch.Generator().manual_seed(7))
+        assert torch.equal(chosen, random)
+    probe = Probe.__new__(Probe)
+    probe.device = torch.device("cpu")
+    fg = torch.zeros_like(attention, dtype=torch.bool)
+    actual, _ = probe.choose(attention, "random_low_mixed_10", fg, torch.tensor([7]), epoch=epoch)
+    assert len(actual[0].unique()) == 98

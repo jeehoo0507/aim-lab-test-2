@@ -8,7 +8,8 @@ METHODS = ("ce", "full", "random", "student", "random_rescue_10",
 TRAIN_METHODS = (*METHODS, "random_anneal_10", "full_to_student_20", "full_to_student_50",
                  "random_to_student_10", "random_to_student_20", "random_to_student_50",
                  "random_rescue_to_student_20", "adaptive_random_to_low_10",
-                 "adaptive_random_to_student")
+                 "adaptive_random_to_student", "random_rescue_to_low_50",
+                 "random_rescue_to_low_70", "random_low_mixed_10")
 CLASSES = ("giraffe", "airplane", "clock", "zebra", "train", "bird",
            "elephant", "toilet", "cow", "bear")
 

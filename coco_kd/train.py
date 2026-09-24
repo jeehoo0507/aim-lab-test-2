@@ -12,7 +12,7 @@ from tqdm import tqdm
 from .config import TRAIN_METHODS
 from .adaptive import ADAPTIVE_TARGETS, GateProbe, update_gate
 from .data import CocoSubset, loader
-from .masking import binary_mask, select_tokens
+from .masking import binary_mask, effective_method, select_tokens
 from .metrics import classification
 from .models import build_model
 from .probe import Probe
@@ -213,8 +213,8 @@ def _train(cfg, role, method, directory, stop_after):
         lr = learning_rate(cfg, epoch, epochs, role)
         for group in optimizer.param_groups:
             group["lr"] = lr
-        active_method = (ADAPTIVE_TARGETS[method] if gate_state["switched_after_epoch"] is not None
-                         else "random_rescue_10") if gate_probe else method
+        active_method = ((ADAPTIVE_TARGETS[method] if gate_state["switched_after_epoch"] is not None
+                          else "random_rescue_10") if gate_probe else effective_method(method, epoch))
         training = train_epoch(model, teacher, train_data, optimizer, scaler, cfg, device, active_method, epoch)
         val = evaluate(model, validation, cfg, device, directory / "validation" / f"epoch_{epoch:03d}.npz")
         if probe:

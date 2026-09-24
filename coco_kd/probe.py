@@ -29,7 +29,8 @@ class Probe:
             return torch.arange(196, device=self.device).expand(len(ids), -1), torch.zeros(len(ids), device=self.device, dtype=torch.long)
         chosen, counts = [], []
         # Match the original Random-10 stream at the start of the schedule.
-        index = DIAGNOSTICS.index("random_rescue_10" if method == "random_anneal_10" else method)
+        stream_method = "random_rescue_10" if method in ("random_anneal_10", "random_low_mixed_10") else method
+        index = DIAGNOSTICS.index(stream_method)
         for i, sample_id in enumerate(ids):
             # Stable across batch size, epoch, initialization and training seed.
             seed = int(sample_id) * 1009 + 10000019 * index + 65537 * repeat

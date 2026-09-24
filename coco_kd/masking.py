@@ -2,19 +2,36 @@ import torch
 
 
 def effective_method(method, epoch):
-    """Resolve opt-in fixed switches to MaskedKD without resetting training."""
+    """Resolve opt-in fixed switches without resetting training."""
     switches = {"full_to_student_20": ("full", 20),
                 "full_to_student_50": ("full", 50),
                 "random_to_student_10": ("random", 10),
                 "random_to_student_20": ("random", 20),
                 "random_to_student_50": ("random", 50),
                 "random_rescue_to_student_20": ("random_rescue_10", 20)}
+    low_switches = {"random_rescue_to_low_50": 50,
+                    "random_rescue_to_low_70": 70}
+    if method in low_switches:
+        if epoch is None:
+            raise ValueError("Switch schedule requires an epoch")
+        return "random_rescue_10" if epoch <= low_switches[method] else "low_score_rescue_10"
+    if method == "random_low_mixed_10":
+        if epoch is None:
+            raise ValueError("Mixed schedule requires an epoch")
+        return "random_rescue_10" if epoch <= 50 else method
     if method in switches:
         if epoch is None:
             raise ValueError("Switch schedule requires an epoch")
         first, switch = switches[method]
         return first if epoch <= switch else "student"
     return method
+
+
+def mixed_low_slots(epoch):
+    """Number of low-attention outgoing patches in the fixed 10-swap budget."""
+    if epoch is None or epoch < 0:
+        raise ValueError("Mixed schedule requires a non-negative epoch")
+    return 0 if epoch <= 50 else 5 if epoch <= 70 else 8
 
 
 def annealed_swaps(epoch):
@@ -51,7 +68,8 @@ def select_tokens(attention, method, keep=98, foreground=None, generator=None, e
     selected = attention.topk(keep, 1).indices
     if method == "student" or (method == "random_rescue_10" and budget == 0):
         return selected, swaps
-    allowed = ("foreground_rescue_10", "random_rescue_10", "low_score_rescue_10", "random_matched")
+    allowed = ("foreground_rescue_10", "random_rescue_10", "low_score_rescue_10",
+               "random_low_mixed_10", "random_matched")
     if method not in allowed:
         raise ValueError(method)
     if method in ("foreground_rescue_10", "random_matched") and foreground is None:
@@ -74,6 +92,14 @@ def select_tokens(attention, method, keep=98, foreground=None, generator=None, e
             continue
         if method == "low_score_rescue_10":
             out = attention[i, selected[i]].argsort()[:count]
+        elif method == "random_low_mixed_10":
+            ordered = attention[i, selected[i]].argsort()
+            low_count = min(mixed_low_slots(epoch), count)
+            low = ordered[:low_count]
+            remaining = ordered[low_count:]
+            random = remaining[torch.randperm(len(remaining), device=attention.device,
+                                               generator=generator)[:count - low_count]]
+            out = torch.cat((low, random))
         else:
             out = outgoing[torch.randperm(len(outgoing), device=attention.device, generator=generator)[:count]]
         new = incoming[torch.randperm(len(incoming), device=attention.device, generator=generator)[:count]]

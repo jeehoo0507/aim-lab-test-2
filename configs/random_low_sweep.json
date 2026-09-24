@@ -1,0 +1,18 @@
+{
+  "data_root": "data/coco_single",
+  "output_root": "outputs/random_low_sweep",
+  "device": "cuda",
+  "epochs": 100,
+  "teacher_epochs": 30,
+  "batch_size": 32,
+  "accumulation_steps": 4,
+  "num_workers": 0,
+  "num_threads": 2,
+  "scratch_lr": 0.0005,
+  "pretrained_lr": 0.00005,
+  "teacher_lr": 0.00005,
+  "checkpoint_every": 50,
+  "diagnostic_epochs": [0, 50, 51, 70, 71, 100],
+  "diagnostic_repeats": 1,
+  "validation_exclude_probe": false
+}

@@ -19,7 +19,8 @@ from coco_kd.data import validate_manifest
 from coco_kd.system import storage_report
 from coco_kd.utils import write_json
 
-METHODS = ("student", "random_rescue_10", "low_score_rescue_10", *ADAPTIVE_TARGETS)
+METHODS = ("student", "random_rescue_10", "low_score_rescue_10", *ADAPTIVE_TARGETS,
+           "random_rescue_to_low_50", "random_rescue_to_low_70", "random_low_mixed_10")
 BASELINES = ("student", "random_rescue_10", "low_score_rescue_10")
 MATCHED_TRAINING_KEYS = ("num_classes", "batch_size", "eval_batch_size", "accumulation_steps",
                          "epochs", "teacher_epochs", "scratch_lr", "pretrained_lr", "teacher_lr",
@@ -110,7 +111,9 @@ def compare_quick(cfg, baseline_root, seeds, inits, methods):
                 score = json.loads((path / "test_metrics.json").read_text())["last"]["macro_accuracy"]
                 rows.append({"seed": seed, "initialization": init, "method": method,
                              "last_macro_accuracy": score,
-                             "switch_after_epoch": (result.get("gate_state") or {}).get("switched_after_epoch"),
+                             "switch_after_epoch": ({"random_rescue_to_low_50": 50,
+                                                    "random_rescue_to_low_70": 70}.get(method)
+                                                    or (result.get("gate_state") or {}).get("switched_after_epoch")),
                              "delta_vs_masked_pp": 100 * (score - original_scores["student"]),
                              "delta_vs_random10_pp": 100 * (score - original_scores["random_rescue_10"])})
     import csv

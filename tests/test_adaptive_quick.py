@@ -56,6 +56,23 @@ def test_quick_comparison_rejects_initialization_mismatch(tmp_path):
         compare_quick(cfg, original, [0], ["scratch"], [method])
 
 
+def test_quick_comparison_reports_fixed_switch_and_mixed_schedule(tmp_path):
+    cfg, original, _, _ = make_results(tmp_path)
+    base = {"config": cfg.to_dict(), "last_epoch": 100, "partial_training": False,
+            "seed": 0, "student_init": "scratch", "teacher_sha256": "same_teacher",
+            "initial_model_sha256": "same_initial", "metadata_sha256": metadata_hash(cfg)}
+    methods = ("random_rescue_to_low_50", "random_rescue_to_low_70", "random_low_mixed_10")
+    for method in methods:
+        run = tmp_path / "quick" / "seed_0" / "scratch" / method
+        write_json(run / "result.json", {**base, "method": method, "gate_state": None})
+        write_json(run / "test_metrics.json", {"last": {"macro_accuracy": .63}})
+    with compare_quick(cfg, original, [0], ["scratch"], methods).open() as stream:
+        rows = {row["method"]: row for row in csv.DictReader(stream)}
+    assert rows[methods[0]]["switch_after_epoch"] == "50"
+    assert rows[methods[1]]["switch_after_epoch"] == "70"
+    assert rows[methods[2]]["switch_after_epoch"] == ""
+
+
 def test_quick_preflight_rejects_baseline_schedule_mismatch(tmp_path):
     cfg, original, _, _ = make_results(tmp_path)
     bad = replace(cfg, epochs=200)
