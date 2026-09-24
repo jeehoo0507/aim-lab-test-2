@@ -61,5 +61,34 @@ found two consecutive favorable gate checks. Before writing this table, the
 evaluator rejects mismatched teacher, dataset, or initial model fingerprints.
 Use fresh seeds 1 and 2 in a separate follow-up once the decision rule is frozen.
 
+## Held-out test attention examples
+
+The compact Git export contains test logits but not the test photos, attention
+arrays, or model weights. To draw test examples, use the saved 100-epoch
+checkpoints and prepared COCO data on the GPU server after pulling the latest
+code. This only performs inference; it does not train or change checkpoints.
+
+```bash
+.venv/bin/python scripts/plot_test_attention.py --init scratch \
+  --sample-ids 189828 56545 --output-dir reports/test_attention/seed0_scratch
+```
+
+ID 189828 (airplane) was corrected by the adaptive Low10 student relative to
+Random10; ID 56545 (bird) changed from correct to incorrect. These were picked
+**after inspecting test predictions** and are explanatory examples, not new
+evidence of a population-level gain. Each image shows the full teacher's and
+three students' last-layer CLS→patch attention, the student's raw top-98, and a
+fixed illustrative 98-patch teacher input. Random replacement is deterministic
+for this figure but is not a record of any particular training-batch draw.
+Attention brightness is not a causal attribution score.
+
+To share the two PNGs:
+
+```bash
+git add reports/test_attention/seed0_scratch
+git commit -m "results: add test attention examples"
+git push origin main
+```
+
 For the original five-method, 200-epoch within-study protocol, see
 [ADAPTIVE_200.md](ADAPTIVE_200.md).
