@@ -1,0 +1,62 @@
+[
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/full/best.pt",
+    "bytes": 22141934,
+    "sha256": "7490d48dd2cc0ef9f3d3c36a5123523c9d89bb037d7796b3963510599a6b6cf6"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/full/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "2c6d0e0840d66341d04d11a9cadb2eca84ec757d8acea43b777bc117c1f23689"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/full/last.pt",
+    "bytes": 22141998,
+    "sha256": "bccd1a028059f31ebc3b3cd4d0e04218ed117e94f189e69dd386216221d9a181"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/random_rescue_10/best.pt",
+    "bytes": 22141998,
+    "sha256": "db420043a5c95748769579a537501d6d355475b243f99a29916fbd7c98b8788a"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/random_rescue_10/epoch_050.pt",
+    "bytes": 22152442,
+    "sha256": "7c34829b2bd6232d7bf2816985a80e43df8a40bada9bcc25bb10b734a433f726"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/random_rescue_10/last.pt",
+    "bytes": 22141998,
+    "sha256": "9d7816831ee92676f9a5552853deb957f18ca3353e07a8fdda79a4d1276154f0"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/student/best.pt",
+    "bytes": 22141934,
+    "sha256": "0ab475dd0c10d97926b0aa204fa70d7c062781e10c5ed333ca07a205cd19c8ae"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/student/epoch_050.pt",
+    "bytes": 22152442,
+    "sha256": "01db960a875d9477b7d1f4b9d94902b384453c402f3dc6d1eb75dc70e085960c"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/student/last.pt",
+    "bytes": 22141998,
+    "sha256": "a1c259714186a64e697ba3d9a9a6980bde720c2006675b1edafb993326100a47"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/scratch/student/resume_050.pt",
+    "bytes": 88661686,
+    "sha256": "684ce2513e811d6de3d2c59312b5d8a2b59f1b8e75d450e38a8dc6e978555925"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/teacher/best.pt",
+    "bytes": 343262190,
+    "sha256": "4d67d188b529a28ca5bc70d576c5399b578e8e01592740bb86e740e34c52a656"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/teacher/last.pt",
+    "bytes": 343262254,
+    "sha256": "aff28a6c1dc445a70966a3f608b7f44837e806623e50df9089951bb190156991"
+  }
+]
