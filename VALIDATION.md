@@ -1,5 +1,16 @@
 # Implementation validation
 
+2026-09-25, DeiT-Base teacher pilot, Linux x86_64, Python 3.11.16, torch 2.5.1+cu124, CPU:
+
+- `uv sync --frozen`, `bash -n setup.sh`, `git diff --check`: passed.
+- `python -m pytest -q`: **57 passed** (14 existing Matplotlib/pyparsing deprecation warnings).
+- New pilot integration test: actual three-process Full KD / MaskedKD / Random10 benchmark and training, interrupted teacher resume, completed-run reuse, test separation, paired Small/Base CSVs and report export passed on synthetic data.
+- Real DeiT-Base: 85,806,346 parameters with the 10-class head; official pretrained checkpoint successfully downloaded/loaded, and both 196/98-patch CPU forwards produced finite logits.
+- Student initialization matches the unmodified `c1cbe580` builder on this host. All nine archived Small baseline configurations match the new pilot except teacher size. Exact archived initialization hashes must also match at launch on the original server; this CPU host does not reproduce the archived server hashes, so they were not bypassed.
+- No local CUDA device or prepared COCO images: Base GPU VRAM, runtime and real-data accuracy are **not measured here**. The launcher measures Base-specific serial and mixed three-process workloads on the server before training.
+
+Earlier validation:
+
 2026-09-22, local macOS ARM64, Python 3.11.15, torch 2.5.1, CPU.
 
 - `uv lock` and `uv sync --frozen`: passed. Lock contains Linux x86_64 CUDA 12.4 torch/torchvision sources and macOS sources.

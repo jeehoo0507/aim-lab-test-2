@@ -1,0 +1,20 @@
+{
+  "data_root": "data/coco_single",
+  "output_root": "outputs/teacher_base_pilot",
+  "device": "cuda",
+  "teacher_variant": "base",
+  "teacher_pretrained": true,
+  "student_init": "scratch",
+  "epochs": 100,
+  "teacher_epochs": 30,
+  "batch_size": 32,
+  "eval_batch_size": 32,
+  "accumulation_steps": 4,
+  "num_workers": 0,
+  "num_threads": 2,
+  "scratch_lr": 0.0005,
+  "teacher_lr": 0.00005,
+  "checkpoint_every": 50,
+  "diagnostic_epochs": [0, 10, 25, 50, 75, 100],
+  "diagnostic_repeats": 5
+}

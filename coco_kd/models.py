@@ -127,6 +127,7 @@ URLS = {
     "student": "https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth",
     "teacher": "https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth",
 }
+BASE_TEACHER_URL = "https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth"
 
 
 def build_model(role, cfg, pretrained=False):
@@ -136,11 +137,16 @@ def build_model(role, cfg, pretrained=False):
         if pretrained:
             raise ValueError("Debug models cannot load ImageNet weights")
         dim, depth, heads = (48, 2, 3) if role == "teacher" else (24, 2, 3)
+        if role == "teacher" and cfg.teacher_variant == "base":
+            dim, depth, heads = 96, 2, 6
     else:
         dim, depth, heads = (384, 12, 6) if role == "teacher" else (192, 12, 3)
+        if role == "teacher" and cfg.teacher_variant == "base":
+            dim, depth, heads = 768, 12, 12
     model = DeiT(dim, depth, heads, cfg.drop_path, num_classes=cfg.num_classes)
     if pretrained:
-        checkpoint = torch.hub.load_state_dict_from_url(URLS[role], map_location="cpu", check_hash=True, weights_only=True)
+        url = BASE_TEACHER_URL if role == "teacher" and cfg.teacher_variant == "base" else URLS[role]
+        checkpoint = torch.hub.load_state_dict_from_url(url, map_location="cpu", check_hash=True, weights_only=True)
         state = {k: v for k, v in checkpoint["model"].items() if not k.startswith("head.")}
         result = model.load_state_dict(state, strict=False)
         if set(result.missing_keys) != {"head.weight", "head.bias"} or result.unexpected_keys:

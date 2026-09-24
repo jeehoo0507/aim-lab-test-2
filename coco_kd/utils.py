@@ -141,6 +141,8 @@ def metadata_hash(cfg):
 def compatible_config(saved, current):
     # Paths and machine-specific settings may change when moving to the server.
     ignored = {"data_root", "output_root", "device", "num_workers", "num_threads"}
+    # All reports/checkpoints before teacher-size experiments used DeiT-Small.
+    saved = {"teacher_variant": "small", **saved}
     differences = {k: (saved.get(k), v) for k, v in current.items()
                    if k not in ignored and saved.get(k) != v}
     if differences:

@@ -6,6 +6,10 @@ Waterbirds 실험 1과 별도 저장소다. COCO 실험 2의 학습 결과와 �
 
 [최종 실험 설계](docs/EXPERIMENT_2.md) · [저장 자료와 해석](docs/ARTIFACTS.md)
 
+Teacher 확대 파일럿: [DeiT-Base + Full KD / MaskedKD / Random10 세 방법 병렬](docs/TEACHER_BASE_PILOT.md).
+`bash setup.sh teacher-base`로 Base 전용 벤치마크 → teacher 30 epoch → seed 0 scratch student 3개 × 100 epoch를 실행한다.
+기존 Small 결과와 별도인 `outputs/teacher_base_pilot`에 저장한다.
+
 후속 200에포치 비교: [신뢰도 진단에 따른 Random10→Low10/MaskedKD 전환 및 병렬 실행](docs/ADAPTIVE_200.md).
 
 추가 비교: [Random 10→0 vs MaskedKD 실행 안내](docs/RANDOM_ANNEAL.md). `bash setup.sh anneal --jobs 4`로 기존 teacher를 재사용하여 seed 0의 두 초기화·두 방법만 별도 경로에서 학습·평가한다. 완료 후 `bash setup.sh anneal-export --push`로 결과를 공유한다.

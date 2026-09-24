@@ -35,7 +35,7 @@ def _hardware(device):
             "uuid": str(getattr(p, "uuid", "unavailable"))}
 
 
-def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
+def _worker(values, rank, barrier, queue, directory, warmup, steps, modes, measure_all=False):
     try:
         # A benchmark worker is already a spawned process. Nested DataLoader
         # subprocesses are unstable under multi-job CUDA runs and multiply shared
@@ -98,7 +98,7 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
             barrier.wait(timeout=180)
             row = {"method": method, "rank": rank, "samples": samples,
                    "updates": steps, "seconds": seconds, "images_per_second": samples / seconds}
-            if method in ("teacher", "student"):
+            if method in ("teacher", "student") or measure_all:
                 barrier.wait(timeout=180)
                 begun = time.perf_counter()
                 evaluate(model, val_data, cfg, device, work / "validation.npz")
@@ -114,20 +114,20 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
                 row["checkpoint_bytes"] = (work / "last.pt").stat().st_size
                 (work / "last.pt").unlink()
                 barrier.wait(timeout=180)
-            if method == "student":
+            if role == "student" and (method == "student" or measure_all):
                 probe = Probe(replace(cfg, epochs=1000000, diagnostic_epochs=[]), work, teacher, device)
-                probe.log(model, 1, "student")  # Populate full-teacher cache before timing.
+                probe.log(model, 1, method)  # Populate full-teacher cache before timing.
                 _sync(device)
                 barrier.wait(timeout=180)
                 begun = time.perf_counter()
-                probe.log(model, 2, "student")
+                probe.log(model, 2, method)
                 _sync(device)
                 row["probe_seconds"] = time.perf_counter() - begun
                 row["probe_bytes"] = (work / "probe/epoch_002.npz").stat().st_size
                 barrier.wait(timeout=180)
                 probe.cfg.diagnostic_epochs = [3]
                 begun = time.perf_counter()
-                probe.log(model, 3, "student")
+                probe.log(model, 3, method)
                 _sync(device)
                 row["diagnostic_seconds"] = time.perf_counter() - begun
                 row["diagnostic_bytes"] = (work / "probe/epoch_003_counterfactual.npz").stat().st_size
@@ -151,13 +151,21 @@ def _worker(values, rank, barrier, queue, directory, warmup, steps, modes):
             pass
 
 
-def run_trial(cfg, jobs, warmup=2, steps=8, modes=("teacher", *METHODS)):
+def run_trial(cfg, jobs, warmup=2, steps=8, modes=("teacher", *METHODS),
+              parallel_methods=None, measure_all=False):
+    # Heterogeneous student jobs must execute the same validation/checkpoint/probe
+    # phases so that their synchronization barriers cannot become misaligned.
+    if parallel_methods is not None:
+        if len(parallel_methods) != jobs or any(m not in METHODS for m in parallel_methods):
+            raise ValueError("parallel_methods must contain one baseline student method per worker")
+        measure_all = True
     context = mp.get_context("spawn")
     barrier, queue = context.Barrier(jobs), context.Queue()
     base = Path(cfg.output_root) / "_benchmark"
     base.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=f"jobs{jobs}_", dir=base) as directory:
-        workers = [context.Process(target=_worker, args=(cfg.to_dict(), rank, barrier, queue, directory, warmup, steps, modes))
+        workers = [context.Process(target=_worker, args=(cfg.to_dict(), rank, barrier, queue, directory, warmup, steps,
+                   (parallel_methods[rank],) if parallel_methods is not None else modes, measure_all))
                    for rank in range(jobs)]
         rows, done = [], set()
         try:
@@ -183,7 +191,7 @@ def run_trial(cfg, jobs, warmup=2, steps=8, modes=("teacher", *METHODS)):
                     print(f"BENCH jobs={jobs}: {message['method']} worker={message['rank']} complete", flush=True)
             for worker in workers:
                 worker.join(timeout=10)
-            return {"jobs": jobs, "profile": "all" if len(modes) > 1 else modes[0],
+            return {"jobs": jobs, "profile": "mixed" if parallel_methods is not None else "all" if len(modes) > 1 else modes[0],
                     "dataloader_workers_per_process": 0,
                     "status": "passed", "rows": rows}
         finally:

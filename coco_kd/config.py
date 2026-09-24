@@ -51,6 +51,7 @@ class Config:
     gate_repeats: int = 3
     student_init: str = "imagenet"
     teacher_pretrained: bool = True
+    teacher_variant: str = "small"
     amp: bool = True
     grad_clip: float = 1.0
     model_scale: str = "deit"
@@ -77,6 +78,8 @@ class Config:
             raise ValueError("gate_min_epoch must be non-negative")
         if cfg.student_init not in ("scratch", "imagenet") or cfg.model_scale not in ("debug", "deit"):
             raise ValueError("Invalid initialization/model scale")
+        if cfg.teacher_variant not in ("small", "base"):
+            raise ValueError("teacher_variant must be small or base")
         if not 0 < cfg.foreground_threshold <= 1 or not 0 <= cfg.kd_alpha <= 1 or cfg.temperature <= 0:
             raise ValueError("Invalid masking/KD parameters")
         if not 0 <= cfg.label_smoothing < 1 or not 0 <= cfg.drop_path < 1:
