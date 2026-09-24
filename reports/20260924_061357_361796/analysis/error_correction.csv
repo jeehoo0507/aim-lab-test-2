@@ -1,0 +1,7 @@
+seed,initialization,method,epoch0_correction_opportunities,horizon,corrected_by_25,corrected_by_50,corrected_by_end,mean_wait_capped_at_horizon_plus1,criterion
+1,scratch,adaptive_random_to_low_10,177,100,0.6497175141242938,0.7288135593220338,0.7401129943502824,34.83050847457627,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+1,scratch,random_low_mixed_10,177,100,0.6497175141242938,0.7288135593220338,0.7457627118644068,34.52542372881356,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+1,scratch,random_rescue_to_low_70,177,100,0.6497175141242938,0.7231638418079096,0.7457627118644068,34.740112994350284,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+2,scratch,adaptive_random_to_low_10,180,100,0.6444444444444445,0.7388888888888889,0.8,31.816666666666666,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+2,scratch,random_low_mixed_10,180,100,0.6444444444444445,0.7277777777777777,0.7666666666666667,33.12777777777778,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+2,scratch,random_rescue_to_low_70,180,100,0.6444444444444445,0.7333333333333333,0.7666666666666667,32.85,first of 3 consecutive correct probe epochs; non-corrected retained as censored

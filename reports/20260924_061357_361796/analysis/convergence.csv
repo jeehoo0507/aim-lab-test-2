@@ -1,0 +1,7 @@
+seed,initialization,method,threshold,reached_three_epochs,first_epoch,updates_to_first,training_seconds_to_first,wall_seconds_to_first_with_probe,last10_val_mean,previous10_val_mean
+1,scratch,adaptive_random_to_low_10,0.8,False,,,,,0.604,0.6002
+1,scratch,random_low_mixed_10,0.8,False,,,,,0.5974999999999999,0.6024
+1,scratch,random_rescue_to_low_70,0.8,False,,,,,0.6043000000000001,0.6037
+2,scratch,adaptive_random_to_low_10,0.8,False,,,,,0.6214,0.6165
+2,scratch,random_low_mixed_10,0.8,False,,,,,0.6073,0.6072
+2,scratch,random_rescue_to_low_70,0.8,False,,,,,0.6011,0.6001000000000001

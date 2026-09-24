@@ -1,0 +1,102 @@
+[
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/adaptive_random_to_low_10/best.pt",
+    "bytes": 22141934,
+    "sha256": "dcabd5ac0795d50438c6c4b28e69a9c99535e32244d3bcc582ec6f63aad00e7b"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/adaptive_random_to_low_10/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "f31ec95fc1c81ecc9479f50bf58094c654b269a703fdd56aa47cf7c41171a93a"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/adaptive_random_to_low_10/last.pt",
+    "bytes": 22141998,
+    "sha256": "80f72ada516e54dbddffb953dab246f78b0d4272aab83edc6e9b17a4e22d4483"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/random_low_mixed_10/best.pt",
+    "bytes": 22141934,
+    "sha256": "07e73597cca49d286e90181a06cac7623fdaedb7aad10b4d52aa5c325e0e74dd"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/random_low_mixed_10/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "657887c92a036e34b289942405136af6e7d97597df2b6834bcd524a45d2b93bd"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/random_low_mixed_10/last.pt",
+    "bytes": 22141998,
+    "sha256": "996f3ccba0291e6fd59157305f12bd54a3ceb5fa3218eddde7d9b98e19680008"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/random_rescue_to_low_70/best.pt",
+    "bytes": 22141934,
+    "sha256": "966aa6457cb552de5e2aa34393b23cb830731be2829fcbdd2354830c51c0ab99"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/random_rescue_to_low_70/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "3285e6550e8114aa657a4c806b629418b0d2a40482057f526d527609003ab5fb"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/scratch/random_rescue_to_low_70/last.pt",
+    "bytes": 22141998,
+    "sha256": "507696606b77b52a648f7912cae8b54cb2f1bb86b45c315e46f02860f7e81ce7"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_1/teacher/best.pt",
+    "bytes": 86714670,
+    "sha256": "b8d5a856da776e14080c1345083380fbad527c9dfa8e6f1a260f130df1ea6872"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/adaptive_random_to_low_10/best.pt",
+    "bytes": 22141934,
+    "sha256": "3f841c7d875829104bf2de9d61d5506e31db43618ca70e1f34f504fa4932ab83"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/adaptive_random_to_low_10/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "91bed3eeaf5e4188c6da36598cab10aef5a92d3b2c1c35bbce7655866cf6262a"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/adaptive_random_to_low_10/last.pt",
+    "bytes": 22141998,
+    "sha256": "e58366e0433454f1626564f032287ee75a7740d404d2f29c3f39d8bda3569c6d"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/random_low_mixed_10/best.pt",
+    "bytes": 22141934,
+    "sha256": "c484f1869b735008b714e6a70325e5c991e9551ffbfae5e456d73af97a1fa734"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/random_low_mixed_10/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "a543bf3cb803c6aace6a130e311ff061a3af3568920549f021d36cb6899be465"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/random_low_mixed_10/last.pt",
+    "bytes": 22141998,
+    "sha256": "29d4896f69f044694684c01a1138462f5c0bfbf8a80a1b1cc4357ab86e941c8e"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/random_rescue_to_low_70/best.pt",
+    "bytes": 22141934,
+    "sha256": "15a3c1b50e1658469109f47dd50de1672f9b01824a70475e5f39fa7bf20e7678"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/random_rescue_to_low_70/epoch_050.pt",
+    "bytes": 22152378,
+    "sha256": "8dfa66080a6905464e960d493a5caeeb65a704f194ee7d119068d102ed249bcb"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/scratch/random_rescue_to_low_70/last.pt",
+    "bytes": 22141998,
+    "sha256": "d4c161f431235427fccefde338c03e891b52d6d2503e563afdc51c1c1f5f8ca9"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/random_low_gate_sweep/seed_2/teacher/best.pt",
+    "bytes": 86714670,
+    "sha256": "cece1a64d36109b2796378cdb3cd2f297eada06af5459421cafe5013a7c490f9"
+  }
+]
