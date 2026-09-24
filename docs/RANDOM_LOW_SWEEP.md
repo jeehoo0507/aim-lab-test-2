@@ -19,7 +19,15 @@ top-98, so the teacher budget remains fixed. The mixed method keeps exploring
 through epoch 100. These schedules were chosen after inspecting seed-0 results;
 they are exploratory, not independently selected on seed 1 or 2.
 
-From the GPU server's `aim-lab-test-2` directory, after `git pull --ff-only`:
+From the GPU server's `aim-lab-test-2` directory, fetch and switch to the
+experiment branch (the shared `main` branch is unchanged):
+
+```bash
+git fetch origin codex/random-low-sweep
+git switch --track origin/codex/random-low-sweep
+```
+
+Then launch:
 
 ```bash
 mkdir -p logs
