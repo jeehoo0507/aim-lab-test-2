@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "config": {
+    "data_root": "data/coco_single",
+    "output_root": "outputs/adaptive100_quick",
+    "device": "cuda",
+    "num_classes": 10,
+    "batch_size": 32,
+    "eval_batch_size": 32,
+    "accumulation_steps": 4,
+    "num_workers": 0,
+    "num_threads": 2,
+    "epochs": 100,
+    "teacher_epochs": 30,
+    "seed": 0,
+    "scratch_lr": 0.0005,
+    "pretrained_lr": 5e-05,
+    "teacher_lr": 5e-05,
+    "min_lr": 1e-06,
+    "warmup_epochs": 5,
+    "weight_decay": 0.05,
+    "drop_path": 0.1,
+    "label_smoothing": 0.1,
+    "kd_alpha": 0.5,
+    "temperature": 1.0,
+    "keep_tokens": 98,
+    "foreground_threshold": 0.5,
+    "checkpoint_every": 50,
+    "checkpoint_target_gb": 5.0,
+    "output_warning_gb": 10.0,
+    "diagnostic_epochs": [
+      0,
+      50,
+      100
+    ],
+    "diagnostic_repeats": 1,
+    "validation_exclude_probe": false,
+    "gate_interval": 10,
+    "gate_min_epoch": 30,
+    "gate_repeats": 3,
+    "student_init": "imagenet",
+    "teacher_pretrained": true,
+    "amp": true,
+    "grad_clip": 1.0,
+    "model_scale": "deit",
+    "max_train_batches": null
+  },
+  "seeds": [
+    0
+  ],
+  "inits": [
+    "scratch",
+    "imagenet"
+  ],
+  "methods": [
+    "adaptive_random_to_low_10",
+    "adaptive_random_to_student"
+  ],
+  "teacher_sources": [
+    {
+      "seed": 0,
+      "source": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/experiment2/seed_0/teacher/best.pt",
+      "sha256": "4a18ddc11c98c662fd77ff9f8b5fc249e00d2c0052263e0e8d76f91088556646",
+      "epoch": 22,
+      "training_code_sha256": "2ea85e2003c012bfeecffa1106a627c256a5524051724632a8427f3ee979855a"
+    }
+  ],
+  "training_budget": "one student full-196 and one frozen teacher 98-patch pass per training batch",
+  "gate": "fixed 200-image validation probe every 10 epochs; two consecutive favorable probes after epoch 30; switch takes effect next epoch",
+  "evaluation": "test only after all requested runs complete; previously inspected test is exploratory",
+  "baseline_root": "outputs/experiment2",
+  "comparison": "epoch-100 last checkpoints only"
+}

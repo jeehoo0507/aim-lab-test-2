@@ -1,0 +1,5 @@
+seed,initialization,method,epoch0_correction_opportunities,horizon,corrected_by_25,corrected_by_50,corrected_by_end,mean_wait_capped_at_horizon_plus1,criterion
+0,imagenet,adaptive_random_to_low_10,185,100,0.9891891891891892,0.9891891891891892,1.0,2.0108108108108107,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+0,imagenet,adaptive_random_to_student,185,100,0.9891891891891892,0.9891891891891892,0.9945945945945946,2.2432432432432434,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+0,scratch,adaptive_random_to_low_10,179,100,0.6536312849162011,0.7541899441340782,0.7877094972067039,31.692737430167597,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+0,scratch,adaptive_random_to_student,179,100,0.6536312849162011,0.7541899441340782,0.776536312849162,32.02793296089386,first of 3 consecutive correct probe epochs; non-corrected retained as censored

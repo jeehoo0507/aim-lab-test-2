@@ -1,0 +1,29 @@
+[
+  {
+    "name": "project",
+    "configured": "/home/kebap/Desktop/workspace/34/aim-lab-test-2",
+    "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2",
+    "free_gib": 93.8797378540039,
+    "total_gib": 794.6720962524414,
+    "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  661G   94G  88% /home",
+    "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+  },
+  {
+    "name": "data",
+    "configured": "data/coco_single",
+    "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/data/coco_single",
+    "free_gib": 93.8797378540039,
+    "total_gib": 794.6720962524414,
+    "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  661G   94G  88% /home",
+    "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+  },
+  {
+    "name": "outputs",
+    "configured": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/adaptive100_quick",
+    "resolved": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/adaptive100_quick",
+    "free_gib": 93.8797378540039,
+    "total_gib": 794.6720962524414,
+    "filesystem": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  795G  661G   94G  88% /home",
+    "mount": "TARGET SOURCE         FSTYPE OPTIONS\n/home  /dev/nvme0n1p3 ext4   rw,relatime,stripe=32"
+  }
+]
