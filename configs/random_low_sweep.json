@@ -1,6 +1,6 @@
 {
   "data_root": "data/coco_single",
-  "output_root": "outputs/random_low_sweep",
+  "output_root": "outputs/random_low_gate_sweep",
   "device": "cuda",
   "epochs": 100,
   "teacher_epochs": 30,
@@ -14,5 +14,8 @@
   "checkpoint_every": 50,
   "diagnostic_epochs": [0, 50, 51, 70, 71, 100],
   "diagnostic_repeats": 1,
-  "validation_exclude_probe": false
+  "validation_exclude_probe": false,
+  "gate_interval": 10,
+  "gate_min_epoch": 30,
+  "gate_repeats": 3
 }

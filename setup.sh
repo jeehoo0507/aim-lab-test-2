@@ -39,5 +39,16 @@ case "$mode" in
   anneal-export) .venv/bin/python -m coco_kd.anneal export "$@" ;;
   adaptive) .venv/bin/python scripts/run_adaptive200.py run "$@" ;;
   adaptive-evaluate) .venv/bin/python scripts/run_adaptive200.py evaluate "$@" ;;
-  *) echo "Usage: bash setup.sh [check|prepare|benchmark|pilot|run|evaluate|export|anneal|anneal-export|adaptive|adaptive-evaluate]"; exit 2 ;;
+  random-low-sweep)
+    .venv/bin/python scripts/run_adaptive200.py run \
+      --config configs/random_low_sweep.json --seeds 1 2 --inits scratch \
+      --methods adaptive_random_to_low_10 random_rescue_to_low_70 random_low_mixed_10 \
+      --jobs 6 "$@"
+    ;;
+  random-low-evaluate)
+    .venv/bin/python scripts/run_adaptive200.py evaluate \
+      --config configs/random_low_sweep.json --seeds 1 2 --inits scratch \
+      --methods adaptive_random_to_low_10 random_rescue_to_low_70 random_low_mixed_10 "$@"
+    ;;
+  *) echo "Usage: bash setup.sh [check|prepare|benchmark|pilot|run|evaluate|export|anneal|anneal-export|adaptive|adaptive-evaluate|random-low-sweep|random-low-evaluate]"; exit 2 ;;
 esac
