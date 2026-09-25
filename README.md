@@ -6,6 +6,12 @@ Waterbirds 실험 1과 별도 저장소다. COCO 실험 2의 학습 결과와 �
 
 [최종 실험 설계](docs/EXPERIMENT_2.md) · [저장 자료와 해석](docs/ARTIFACTS.md)
 
+서버용 제거 방식 실험: [기존 A5000 서버 실행 안내](docs/SERVER_DELETION.md).
+`bash setup_deletion_server.sh start`로 기존 COCO·Base teacher 확인 → 서버 benchmark → 네 방법 순차 학습을 실행한다. 2시간 제한 없이 진행하며 결과는 `outputs/deletion_server`에 저장한다.
+
+현재 RTX 5080 PC용 제거 방식 실험: [사양·자원 제한·단계별 실행 안내](docs/LOCAL_DELETION_5080.md).
+`bash setup_deletion.sh check`로 준비 상태만 확인한다. 별도 환경에서 MaskedKD/Random10과 두 제거 방식을 순차 비교하며, 실제 학습은 사용자가 명시적으로 실행한다.
+
 DINO 후속 비교: [고정 DINO attention + Random10 / 논문 후반 혼합](docs/DINO_ATTENTION_PILOT.md).
 `bash setup.sh dino`로 기존 Base teacher를 재사용하고 DINO attention 기준 학생 3개를 벤치마크 후 병렬 학습한다.
 완료 후 `bash setup.sh dino-evaluate`, `bash setup.sh dino-export --push`로 평가·공유한다.

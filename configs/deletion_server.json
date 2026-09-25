@@ -1,0 +1,44 @@
+{
+  "experiment": {
+    "data_root": "data/coco_single",
+    "output_root": "outputs/deletion_server",
+    "device": "cuda:0",
+    "teacher_variant": "base",
+    "teacher_pretrained": true,
+    "student_init": "scratch",
+    "seed": 0,
+    "epochs": 100,
+    "teacher_epochs": 30,
+    "batch_size": 32,
+    "eval_batch_size": 32,
+    "accumulation_steps": 4,
+    "num_workers": 0,
+    "num_threads": 2,
+    "scratch_lr": 0.0005,
+    "teacher_lr": 0.00005,
+    "checkpoint_every": 100,
+    "diagnostic_epochs": [],
+    "diagnostic_repeats": 1
+  },
+  "audit": {
+    "epsilon": 0.05,
+    "etas": [0.1, 0.5, 1.0],
+    "swap_budgets": [10, 5],
+    "min_gain": 1e-8,
+    "tolerance": 1e-10,
+    "candidate_batch": 3,
+    "max_views_per_image": 24
+  },
+  "resources": {
+    "gpu_memory_gib": 12.0,
+    "min_gpu_free_gib": 3.0,
+    "min_ram_available_gib": 8.0,
+    "min_disk_free_gib": 15.0,
+    "max_temperature_c": 80.0,
+    "duty_cycle": 1.0,
+    "max_session_minutes": null,
+    "check_interval_seconds": 5.0,
+    "nice": 5
+  },
+  "dataset_manifest": "reports/20260923_152152_732466/dataset_manifest.json"
+}

@@ -1,0 +1,10 @@
+# Kept separate from the original experiment's torch 2.5.1 / CUDA 12.4 lock.
+# Install torch/torchvision from the official cu128 index in setup_deletion.sh.
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.14.1
+matplotlib==3.9.2
+Pillow==11.0.0
+tqdm==4.67.1
+pycocotools==2.0.10
+pytest==8.3.4
