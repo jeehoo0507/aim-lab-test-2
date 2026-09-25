@@ -1,0 +1,13 @@
+seed,selection_source,method,checkpoint,epoch,test_macro_pct
+0,student,full,last,100,59.01592310852164
+0,student,full,best,83,59.54197337688891
+0,student,student,last,100,57.944211572706706
+0,student,student,best,87,57.746224085511635
+0,student,random_rescue_10,last,100,60.892970818382494
+0,student,random_rescue_10,best,79,61.50858009174392
+0,dino,dino,last,100,60.46774390353769
+0,dino,dino,best,57,57.15939236710923
+0,dino,dino_random_rescue_10,last,100,57.93104606827464
+0,dino,dino_random_rescue_10,best,96,57.93104606827464
+0,dino,dino_paper_late,last,100,59.069086217736945
+0,dino,dino_paper_late,best,71,58.935382905168446

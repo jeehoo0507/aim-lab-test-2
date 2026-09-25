@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "study": "dino_attention_pilot",
+  "config": {
+    "data_root": "data/coco_single",
+    "output_root": "outputs/dino_attention_pilot",
+    "device": "cuda",
+    "num_classes": 10,
+    "batch_size": 32,
+    "eval_batch_size": 32,
+    "accumulation_steps": 4,
+    "num_workers": 0,
+    "num_threads": 2,
+    "epochs": 100,
+    "teacher_epochs": 30,
+    "seed": 0,
+    "scratch_lr": 0.0005,
+    "pretrained_lr": 5e-05,
+    "teacher_lr": 5e-05,
+    "min_lr": 1e-06,
+    "warmup_epochs": 5,
+    "weight_decay": 0.05,
+    "drop_path": 0.1,
+    "label_smoothing": 0.1,
+    "kd_alpha": 0.5,
+    "temperature": 1.0,
+    "keep_tokens": 98,
+    "foreground_threshold": 0.5,
+    "checkpoint_every": 50,
+    "checkpoint_target_gb": 5.0,
+    "output_warning_gb": 10.0,
+    "diagnostic_epochs": [
+      0,
+      10,
+      25,
+      50,
+      75,
+      100
+    ],
+    "diagnostic_repeats": 5,
+    "validation_exclude_probe": false,
+    "gate_interval": 10,
+    "gate_min_epoch": 30,
+    "gate_repeats": 3,
+    "student_init": "scratch",
+    "teacher_pretrained": true,
+    "teacher_variant": "base",
+    "amp": true,
+    "grad_clip": 1.0,
+    "model_scale": "deit",
+    "max_train_batches": null
+  },
+  "seeds": [
+    0
+  ],
+  "methods": [
+    "dino",
+    "dino_random_rescue_10",
+    "dino_paper_late"
+  ],
+  "teachers": [
+    {
+      "seed": 0,
+      "source": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/teacher_base_pilot/seed_0/teacher/best.pt",
+      "sha256": "4d67d188b529a28ca5bc70d576c5399b578e8e01592740bb86e740e34c52a656",
+      "epoch": 18,
+      "training_code_sha256": "46567124564cc524798009b24b7d5cb70693d151745d510c31a7c0942d60b069"
+    }
+  ],
+  "baselines": [
+    {
+      "seed": 0,
+      "method": "full",
+      "initial_model_sha256": "543d4714549b4a1318384fd102ebcfc4b65a0ccf73da68d63e1507d15e5a4e8a",
+      "result_sha256": "5bd879cad25b0575e8d0dc08253f7376bba165e0773ad71601e0f28505d4176d",
+      "test_sha256": "c20c51d90df35a40380938fe64f7d54c04a08d13556fa75cf14325870bce7b52"
+    },
+    {
+      "seed": 0,
+      "method": "student",
+      "initial_model_sha256": "543d4714549b4a1318384fd102ebcfc4b65a0ccf73da68d63e1507d15e5a4e8a",
+      "result_sha256": "58b7a521f062e67faf2d10bb7de34ac22e2b2138da709676b81c20acbfec6649",
+      "test_sha256": "f66ef92f6b2246ed240e41781fb5a77766b7b7428d48cf89d0f9dd50cca6c13b"
+    },
+    {
+      "seed": 0,
+      "method": "random_rescue_10",
+      "initial_model_sha256": "543d4714549b4a1318384fd102ebcfc4b65a0ccf73da68d63e1507d15e5a4e8a",
+      "result_sha256": "67a6b2646bae0043a356b02adb3084382b4adb54fcc679ff98e207d0577347bc",
+      "test_sha256": "169a7308dc203a1826beedbe48bf9a13fad254cde9059d8e97c3d9f9b49c5ce4"
+    }
+  ],
+  "baseline_root": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/reports/20260924_204055_692914",
+  "metadata_sha256": "ffbd7a44425184e36efc3f51821cb1fb7126d5fea1dbfeaf0c3229a90528e62e",
+  "code_sha256": "6f5712b44abc2a00a7b7735633c916f9c236349ab0ff8c5a7ab67f455686dea7",
+  "selector_sha256": "acb98ef896cc94acceaed9db9ed40bf0fe7c6da5039bf31a18a5f73dbc58a438",
+  "selector": "frozen_DINO_v1_ViT-S16",
+  "selector_weights_url": "https://dl.fbaipublicfiles.com/dino/dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth",
+  "selector_file_sha256": "1566d50496f27f52f07fea6094fa29b2fdd6fae89da65bdd3ebc3b24ef6b7eb7",
+  "selector_is_synthetic": false,
+  "student_patches": 196,
+  "teacher_patches": 98,
+  "dino_random_rescue_10": "All epochs: remove random 10 from top98; add random10 from outside top98",
+  "dino_paper_late": "Epochs 1-50 top98; 51-100 top78 plus random20 from other118 (40%+10% rounded)",
+  "primary_endpoint": "Epoch100 test macro; validation-best reported separately",
+  "interpretation": "COCO adaptation of MaskedKD section5.1/Table5, not DINO SSL or ImageNet reproduction. One-seed pilot and previously observed test set are exploratory."
+}

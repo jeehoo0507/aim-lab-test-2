@@ -1,0 +1,25 @@
+{
+  "seeds": [
+    0
+  ],
+  "scope": "COCO adaptation of MaskedKD section5.1/Table5, not DINO SSL or ImageNet reproduction. One-seed pilot and previously observed test set are exploratory.",
+  "comparisons": [
+    {
+      "seed": 0,
+      "checkpoint": "last",
+      "random10_gain_student_pp": 2.948759245675788,
+      "random10_gain_dino_pp": -2.5366978352630483,
+      "dino_minus_student_random10_gain_pp": -5.485457080938836,
+      "paper_late_gain_dino_pp": -1.3986576858007425
+    },
+    {
+      "seed": 0,
+      "checkpoint": "best",
+      "random10_gain_student_pp": 3.762356006232288,
+      "random10_gain_dino_pp": 0.7716537011654125,
+      "dino_minus_student_random10_gain_pp": -2.9907023050668755,
+      "paper_late_gain_dino_pp": 1.7759905380592187
+    }
+  ],
+  "warning": "Do not count probe images or diagnostic repeats as independent training seeds."
+}

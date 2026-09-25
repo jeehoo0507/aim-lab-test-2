@@ -1,0 +1,6 @@
+{
+  "completed_student_runs": 3,
+  "test_available": true,
+  "synthetic_debug": false,
+  "note": "Raw selection is before rescue; actual selection is teacher input. Repeated masks are not independent training seeds."
+}

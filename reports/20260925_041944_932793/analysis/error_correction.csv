@@ -1,0 +1,4 @@
+seed,initialization,method,epoch0_correction_opportunities,horizon,corrected_by_25,corrected_by_50,corrected_by_end,mean_wait_capped_at_horizon_plus1,criterion
+0,scratch,dino,180,100,0.6388888888888888,0.7333333333333333,0.7888888888888889,32.77777777777778,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+0,scratch,dino_paper_late,180,100,0.6388888888888888,0.7333333333333333,0.7888888888888889,32.77777777777778,first of 3 consecutive correct probe epochs; non-corrected retained as censored
+0,scratch,dino_random_rescue_10,180,100,0.6611111111111111,0.7333333333333333,0.7555555555555555,33.87777777777778,first of 3 consecutive correct probe epochs; non-corrected retained as censored

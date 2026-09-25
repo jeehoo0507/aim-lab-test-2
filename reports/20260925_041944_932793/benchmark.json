@@ -1,0 +1,141 @@
+{
+  "study": "dino_attention_pilot",
+  "hardware": {
+    "device": "cuda:0",
+    "name": "NVIDIA RTX A5000",
+    "total_bytes": 25278021632,
+    "uuid": "4cb616e2-1b9c-36b1-e595-e6ed8b44d8c8"
+  },
+  "jobs": 3,
+  "trials": [
+    {
+      "jobs": 1,
+      "profile": "all",
+      "dataloader_workers_per_process": 0,
+      "status": "passed",
+      "rows": [
+        {
+          "method": "dino",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 16.590398732805625,
+          "images_per_second": 61.72244660854091,
+          "validation_seconds": 13.156097665894777,
+          "validation_bytes": 29011,
+          "checkpoint_seconds": 0.16300948080606759,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 2.9514360819011927,
+          "probe_bytes": 492586,
+          "diagnostic_seconds": 9.527813775930554,
+          "diagnostic_bytes": 965136,
+          "peak_reserved_gib": 1.751953125,
+          "peak_allocated_gib": 1.4115915298461914
+        },
+        {
+          "method": "dino_random_rescue_10",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 16.498107781866565,
+          "images_per_second": 62.06772398017068,
+          "validation_seconds": 12.493617757922038,
+          "validation_bytes": 28620,
+          "checkpoint_seconds": 0.1595245508942753,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 3.062330062035471,
+          "probe_bytes": 497493,
+          "diagnostic_seconds": 9.616427905159071,
+          "diagnostic_bytes": 964557,
+          "peak_reserved_gib": 1.76953125,
+          "peak_allocated_gib": 1.4128165245056152
+        },
+        {
+          "method": "dino_paper_late",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 15.703952124109492,
+          "images_per_second": 65.20651565333698,
+          "validation_seconds": 12.265058864140883,
+          "validation_bytes": 28939,
+          "checkpoint_seconds": 0.15474924887530506,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 2.9183108611032367,
+          "probe_bytes": 494014,
+          "diagnostic_seconds": 9.414166179019958,
+          "diagnostic_bytes": 966351,
+          "peak_reserved_gib": 1.76953125,
+          "peak_allocated_gib": 1.4128165245056152
+        }
+      ]
+    },
+    {
+      "jobs": 3,
+      "profile": "mixed",
+      "dataloader_workers_per_process": 0,
+      "status": "passed",
+      "rows": [
+        {
+          "method": "dino",
+          "rank": 0,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 16.12166643398814,
+          "images_per_second": 63.517007016171426,
+          "validation_seconds": 12.52451705886051,
+          "validation_bytes": 29011,
+          "checkpoint_seconds": 0.1723704740870744,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 3.07728845695965,
+          "probe_bytes": 492586,
+          "diagnostic_seconds": 20.766738183097914,
+          "diagnostic_bytes": 965136,
+          "peak_reserved_gib": 1.751953125,
+          "peak_allocated_gib": 1.4115915298461914
+        },
+        {
+          "method": "dino_random_rescue_10",
+          "rank": 1,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 16.93722263118252,
+          "images_per_second": 60.458554646069885,
+          "validation_seconds": 12.675019858172163,
+          "validation_bytes": 28667,
+          "checkpoint_seconds": 0.1787977481726557,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 3.2840942649636418,
+          "probe_bytes": 494985,
+          "diagnostic_seconds": 21.00822418020107,
+          "diagnostic_bytes": 965726,
+          "peak_reserved_gib": 1.751953125,
+          "peak_allocated_gib": 1.4115915298461914
+        },
+        {
+          "method": "dino_paper_late",
+          "rank": 2,
+          "samples": 1024,
+          "updates": 8,
+          "seconds": 16.238725029164925,
+          "images_per_second": 63.059137842465155,
+          "validation_seconds": 13.289851899957284,
+          "validation_bytes": 28846,
+          "checkpoint_seconds": 0.17678128299303353,
+          "checkpoint_bytes": 88597774,
+          "probe_seconds": 3.1960675939917564,
+          "probe_bytes": 495117,
+          "diagnostic_seconds": 20.865581274963915,
+          "diagnostic_bytes": 965568,
+          "peak_reserved_gib": 1.75,
+          "peak_allocated_gib": 1.4115915298461914
+        }
+      ]
+    }
+  ],
+  "required_free_gib": 9.91279296875,
+  "gpu_estimate": true,
+  "estimated_hours_per_seed": 3.239448328332227,
+  "estimated_plan_hours": 3.239448328332227,
+  "note": "Measured frozen DINO forward is included. Includes validation/probe/checkpoint; excludes download, test/export. No teacher retraining."
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino/best.pt",
+    "bytes": 22142126,
+    "sha256": "4f87eb2ddd24cd6a443e47d66d286c1e95fd9ac131c2b04432c4ce7a99010215"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino/epoch_050.pt",
+    "bytes": 22152570,
+    "sha256": "5820fd1412190771539b6d6beedf0989008703b99134cfb59c0f3316ea55adc2"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino/last.pt",
+    "bytes": 22142190,
+    "sha256": "f2486cb93d9fa94b4b19c0d84a3dd66bdad0f26df2cc8537ecf53bab68977f43"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino_paper_late/best.pt",
+    "bytes": 22142126,
+    "sha256": "cf253d7274ad0c86cc5164e3aa3b088d6e633afd0783d85f54840aceb959acf5"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino_paper_late/epoch_050.pt",
+    "bytes": 22152570,
+    "sha256": "14f50496687a6040d8c54b9a8afdef1244266db9d83b9e51b5a3635a39610229"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino_paper_late/last.pt",
+    "bytes": 22142190,
+    "sha256": "30604865602511363ba37ebe1fec3e1593638ab1cb6ad13ff47fe2d039c07b35"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino_random_rescue_10/best.pt",
+    "bytes": 22142126,
+    "sha256": "278f5d0791ee00f1eb43708ba94a8cddaa83aeb203b7316561e51789b51331c8"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino_random_rescue_10/epoch_050.pt",
+    "bytes": 22152570,
+    "sha256": "53937821a8f1217d8647eb2614d190c9b24d68b4aa4c0db27de8399aef7c3fa8"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/scratch/dino_random_rescue_10/last.pt",
+    "bytes": 22142190,
+    "sha256": "2b9302506388b9b7f85df39968d63cd98f6704769a5d66fe3e9da71488714e04"
+  },
+  {
+    "server_path": "/home/kebap/Desktop/workspace/34/aim-lab-test-2/outputs/dino_attention_pilot/seed_0/teacher/best.pt",
+    "bytes": 343262190,
+    "sha256": "4d67d188b529a28ca5bc70d576c5399b578e8e01592740bb86e740e34c52a656"
+  }
+]

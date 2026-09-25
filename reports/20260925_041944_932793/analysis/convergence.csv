@@ -1,0 +1,4 @@
+seed,initialization,method,threshold,reached_three_epochs,first_epoch,updates_to_first,training_seconds_to_first,wall_seconds_to_first_with_probe,last10_val_mean,previous10_val_mean
+0,scratch,dino,0.8,False,,,,,0.5909,0.5915000000000001
+0,scratch,dino_paper_late,0.8,False,,,,,0.5849,0.5843999999999999
+0,scratch,dino_random_rescue_10,0.8,False,,,,,0.6115,0.6007
