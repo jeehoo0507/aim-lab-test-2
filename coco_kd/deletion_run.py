@@ -49,18 +49,19 @@ def load_profile(path):
 def code_hash():
     digest = hashlib.sha256()
     for name in ('deletion.py', 'deletion_run.py', 'deletion_resources.py', 'models.py', 'train.py',
-                 'data.py', 'config.py', 'masking.py', 'utils.py', 'metrics.py'):
+                 'data.py', 'config.py', 'masking.py', 'utils.py', 'metrics.py', 'deletion_parallel.py'):
         digest.update(name.encode())
         digest.update((ROOT/'coco_kd'/name).read_bytes())
     return digest.hexdigest()
 
 
-def identity(cfg, policy, method, teacher_file=None):
+def identity(cfg, policy, method, teacher_file=None, teacher_seed=None):
     values = cfg.to_dict()
     for key in ('data_root', 'output_root', 'device'):
         values.pop(key)
     record = {'experiment': values, 'audit': asdict(policy), 'method': method,
               'data_sha256': metadata_hash(cfg), 'teacher_sha256': sha256(teacher_file) if teacher_file else None,
+              'teacher_seed': (cfg.seed if teacher_seed is None else teacher_seed) if teacher_file else None,
               'code_sha256': code_hash(), 'versions': versions()}
     return hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest(), record
 
@@ -74,11 +75,12 @@ def run_directory(cfg, method):
     return root/'teacher' if method == 'teacher' else root/cfg.student_init/method
 
 
-def validate_teacher_state(cfg, state):
+def validate_teacher_state(cfg, state, teacher_seed=None):
     saved = state.get('config', {})
     if state.get('role') != 'teacher' or state.get('metadata_sha256') != metadata_hash(cfg):
         raise ValueError('Teacher is not an experiment-2 checkpoint for this exact dataset')
-    if saved.get('teacher_variant', 'small') != cfg.teacher_variant or saved.get('seed') != cfg.seed:
+    expected_seed = cfg.seed if teacher_seed is None else teacher_seed
+    if saved.get('teacher_variant', 'small') != cfg.teacher_variant or saved.get('seed') != expected_seed:
         raise ValueError('Teacher size/seed mismatch')
     if int(state.get('epoch', 0)) < 1:
         raise ValueError('An untrained teacher checkpoint cannot supervise students')
@@ -86,15 +88,15 @@ def validate_teacher_state(cfg, state):
         raise ValueError('Teacher class count/model scale mismatch')
 
 
-def get_teacher(cfg, path, device):
+def get_teacher(cfg, path, device, teacher_seed=None):
     state = load_checkpoint(path)
-    validate_teacher_state(cfg, state)
+    validate_teacher_state(cfg, state, teacher_seed)
     teacher = build_model('teacher', cfg).to(device)
     teacher.load_state_dict(state['model'])
     return teacher.requires_grad_(False).eval()
 
 
-def check(cfg, policy, limits, source_manifest, checkpoint):
+def check(cfg, policy, limits, source_manifest, checkpoint, teacher_seed=None):
     info = hardware(cfg.output_root)
     blockers = check_resources(info, limits)
     installed = versions()
@@ -120,13 +122,14 @@ def check(cfg, policy, limits, source_manifest, checkpoint):
         blockers.append('Trained teacher absent: supply --teacher-checkpoint or explicitly run teacher')
     elif manifest.is_file():
         try:
-            validate_teacher_state(cfg, load_checkpoint(checkpoint))
+            validate_teacher_state(cfg, load_checkpoint(checkpoint), teacher_seed)
         except (ValueError, OSError, RuntimeError, KeyError) as error:
             blockers.append(f'Teacher checkpoint incompatible: {error}')
     result = {'hardware': info, 'versions': installed, 'cuda_build': torch.version.cuda,
               'experiment': cfg.to_dict(), 'audit': asdict(policy), 'resources': asdict(limits),
               'sequential_methods': list(DEFAULT_METHODS), 'effective_batch': cfg.batch_size*cfg.accumulation_steps,
               'teacher_checkpoint': str(checkpoint), 'blockers_before_student_training': blockers,
+              'teacher_seed': cfg.seed if teacher_seed is None else teacher_seed,
               'training_started': False, 'note': 'Duty cycle inserts idle time; it is not a GPU utilization or power cap.'}
     write_json(Path(cfg.output_root)/'preflight.json', result)
     print(json.dumps(result, indent=2, ensure_ascii=False))
@@ -273,12 +276,12 @@ def training_epoch(model, teacher, dataset, optimizer, scaler, cfg, policy, devi
             'amp_skipped_updates': skipped, 'seconds': time.monotonic()-begun}
 
 
-def train_one(cfg, policy, limits, method, checkpoint=None, until_epoch=None):
+def train_one(cfg, policy, limits, method, checkpoint=None, until_epoch=None, teacher_seed=None):
     role = 'teacher' if method == 'teacher' else 'student'
     if role == 'student' and not Path(checkpoint).is_file():
         raise FileNotFoundError('Trained teacher missing; use teacher action or --teacher-checkpoint')
     directory = run_directory(cfg, method)
-    signature, provenance = identity(cfg, policy, method, checkpoint if role == 'student' else None)
+    signature, provenance = identity(cfg, policy, method, checkpoint if role == 'student' else None, teacher_seed)
     directory.mkdir(parents=True, exist_ok=True)
     done = directory/'result.json'
     if done.exists():
@@ -296,7 +299,7 @@ def train_one(cfg, policy, limits, method, checkpoint=None, until_epoch=None):
     seed_all(cfg.seed)
     model = build_model(role, cfg, pretrained=previous is None and (cfg.teacher_pretrained if role == 'teacher' else cfg.student_init == 'imagenet')).to(device)
     initial_hash = previous['initial_model_sha256'] if previous else model_fingerprint(model)
-    teacher = get_teacher(cfg, checkpoint, device) if role == 'student' else None
+    teacher = get_teacher(cfg, checkpoint, device, teacher_seed) if role == 'student' else None
     optimizer = optimizer_for(model, cfg)
     scaler = torch.amp.GradScaler('cuda', enabled=cfg.amp and device.type == 'cuda')
     best_weights, best_score, best_epoch, history, start = cpu_state(model), -1.0, 0, [], 0
@@ -375,14 +378,14 @@ def train_one(cfg, policy, limits, method, checkpoint=None, until_epoch=None):
             signal.signal(sig, handler)
 
 
-def benchmark(cfg, policy, limits, steps=2):
+def benchmark(cfg, policy, limits, steps=2, methods=None, barrier=None, warmup=0):
     """Temporary synthetic full-size models; no experiment checkpoints updated."""
     from .utils import setup_device
     device = setup_device(cfg)
     guard = ResourceGuard(limits, cfg.output_root, device)
     guard.configure()
     rows = []
-    for method in ('teacher', *DEFAULT_METHODS):
+    for method in (('teacher', *DEFAULT_METHODS) if methods is None else methods):
         seed_all(812)
         role = 'teacher' if method == 'teacher' else 'student'
         model = build_model(role, cfg).to(device).train()
@@ -395,7 +398,12 @@ def benchmark(cfg, policy, limits, steps=2):
         if device.type == 'cuda':
             torch.cuda.reset_peak_memory_stats(device)
         begun = time.monotonic()
-        for _ in range(steps):
+        for step in range(warmup+steps):
+            if step == warmup:
+                if barrier is not None:
+                    barrier.wait(timeout=180)
+                guard.last_work = time.monotonic()
+                begun = time.monotonic()
             guard.tick()
             optimizer.zero_grad(set_to_none=True)
             with autocast(cfg, device):
@@ -424,6 +432,7 @@ def benchmark(cfg, policy, limits, steps=2):
             torch.cuda.empty_cache()
     report = {'hardware': hardware(cfg.output_root), 'experiment': cfg.to_dict(), 'audit': asdict(policy),
               'resources': asdict(limits), 'versions': versions(), 'code_sha256': code_hash(), 'rows': rows,
+              'measured_microbatches': steps, 'warmup_microbatches': warmup,
               'note': 'Synthetic timing only. Early/late audit acceptance and data IO differ. Includes idle duty, excludes validation/download. Optimizer every microbatch makes optimizer cost conservative.'}
     write_json(Path(cfg.output_root)/'benchmark.json', report)
     return report
@@ -449,7 +458,7 @@ def require_benchmark(cfg, policy, limits):
             raise ValueError('Benchmark GPU changed or unavailable; benchmark on this server first')
 
 
-def evaluate_runs(cfg, policy, limits, methods, checkpoint):
+def evaluate_runs(cfg, policy, limits, methods, checkpoint, teacher_seed=None):
     from .utils import setup_device
     device = setup_device(cfg)
     guard = ResourceGuard(limits, cfg.output_root, device)
@@ -458,7 +467,7 @@ def evaluate_runs(cfg, policy, limits, methods, checkpoint):
     for method in methods:
         path = run_directory(cfg, method)
         done = json.loads((path/'result.json').read_text())
-        signature, _ = identity(cfg, policy, method, checkpoint)
+        signature, _ = identity(cfg, policy, method, checkpoint, teacher_seed)
         if done['signature'] != signature or done['partial_training']:
             raise ValueError('Complete matching runs are required before final test')
         model = build_model('student', cfg).to(device)
@@ -479,6 +488,8 @@ def main(argv=None):
     parser.add_argument('--data-root')
     parser.add_argument('--output-root')
     parser.add_argument('--teacher-checkpoint')
+    parser.add_argument('--seed', type=int)
+    parser.add_argument('--teacher-seed', type=int, help='Explicit frozen teacher seed; defaults to student seed')
     parser.add_argument('--methods', nargs='+', choices=METHODS, default=list(DEFAULT_METHODS))
     parser.add_argument('--until-epoch', type=int)
     parser.add_argument('--steps', type=int, default=2)
@@ -486,12 +497,13 @@ def main(argv=None):
     args = parser.parse_args(argv)
     os.chdir(ROOT)
     cfg, policy, limits, source = load_profile(args.config)
-    cfg = replace(cfg, data_root=args.data_root or cfg.data_root, output_root=args.output_root or cfg.output_root)
+    cfg = replace(cfg, data_root=args.data_root or cfg.data_root, output_root=args.output_root or cfg.output_root,
+                  seed=cfg.seed if args.seed is None else args.seed)
     checkpoint = teacher_path(cfg, args.teacher_checkpoint)
     if args.until_epoch is not None and args.until_epoch < 1 or not 1 <= args.steps <= 8:
         parser.error('until-epoch must be positive; steps must be 1..8')
     if args.action == 'check':
-        result = check(cfg, policy, limits, source, checkpoint)
+        result = check(cfg, policy, limits, source, checkpoint, args.teacher_seed)
         if args.strict and result['blockers_before_student_training']:
             raise SystemExit(2)
         return
@@ -512,7 +524,7 @@ def main(argv=None):
             require_benchmark(cfg, policy, limits)
             train_one(cfg, policy, limits, 'teacher', until_epoch=args.until_epoch)
         elif args.action == 'evaluate':
-            evaluate_runs(cfg, policy, limits, args.methods, checkpoint)
+            evaluate_runs(cfg, policy, limits, args.methods, checkpoint, args.teacher_seed)
         else:
             require_benchmark(cfg, policy, limits)
             if args.teacher_checkpoint is None and not (run_directory(cfg, 'teacher')/'result.json').exists():
@@ -524,7 +536,7 @@ def main(argv=None):
                              limits.max_session_minutes-(time.monotonic()-session_start)/60)
                 if remaining is not None and remaining <= 0:
                     raise ResourceStop('Session time limit reached before next method')
-                train_one(cfg, policy, replace(limits, max_session_minutes=remaining), method, checkpoint, until)
+                train_one(cfg, policy, replace(limits, max_session_minutes=remaining), method, checkpoint, until, args.teacher_seed)
                 gc.collect()
                 torch.cuda.empty_cache()
 

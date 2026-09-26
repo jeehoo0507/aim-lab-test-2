@@ -8,6 +8,7 @@ Waterbirds 실험 1과 별도 저장소다. COCO 실험 2의 학습 결과와 �
 
 서버용 제거 방식 실험: [기존 A5000 서버 실행 안내](docs/SERVER_DELETION.md).
 `bash setup_deletion_server.sh start`로 기존 COCO·Base teacher 확인 → 서버 benchmark → 네 방법 순차 학습을 실행한다. 2시간 제한 없이 진행하며 결과는 `outputs/deletion_server`에 저장한다.
+추가 seed 비교는 `bash setup_deletion_server.sh parallel --seeds 0 1 2 --max-jobs 3`을 사용한다. 같은 Base teacher를 고정하고, 실제 동시 benchmark의 메모리·속도에 따라1–3 worker를 선택한다. 12개 학생 학습 결과는 `outputs/deletion_server_multi`에 저장한다.
 
 현재 RTX 5080 PC용 제거 방식 실험: [사양·자원 제한·단계별 실행 안내](docs/LOCAL_DELETION_5080.md).
 `bash setup_deletion.sh check`로 준비 상태만 확인한다. 별도 환경에서 MaskedKD/Random10과 두 제거 방식을 순차 비교하며, 실제 학습은 사용자가 명시적으로 실행한다.

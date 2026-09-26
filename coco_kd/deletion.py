@@ -5,6 +5,7 @@ The existing experiment's model, loss and mask implementations remain intact.
 """
 from dataclasses import dataclass
 
+import numpy as np
 import torch
 from torch.nn import functional as F
 
@@ -84,14 +85,16 @@ def removal_proposals(current, removable, k, attention, features, random_out=Non
     ranked = sorted(removable.tolist(), key=lambda i: (float(attention[i]), i))
     proposals.append(ranked[:k])
     f = F.normalize(features.float(), dim=-1)
-    similarity = (f @ f.T).cpu()
+    similarity = (f @ f.T).numpy()
+    np.fill_diagonal(similarity, -np.inf)
     left, allowed, removed = set(current.tolist()), set(removable.tolist()), []
     for _ in range(k):
-        def key(i):
-            neighbors = sorted(left - {i})
-            redundancy = float(similarity[i, neighbors].max()) if neighbors else -float("inf")
-            return (-redundancy, float(attention[i]), i)
-        chosen = min(allowed, key=key)
+        # The same conditional max and tie break as the scalar search, in one
+        # array operation instead of thousands of tiny PyTorch indexing calls.
+        eligible = np.array(sorted(allowed))
+        redundancy = similarity[np.ix_(eligible, sorted(left))].max(axis=1)
+        order = np.lexsort((eligible, attention.numpy()[eligible], -redundancy))
+        chosen = int(eligible[order[0]])
         removed.append(chosen)
         allowed.remove(chosen)
         left.remove(chosen)

@@ -19,8 +19,8 @@ if [[ "$mode" == "env" ]]; then
   exit 0
 fi
 case "$mode" in
-  check|prepare|benchmark|teacher|pilot|run|start|evaluate|test) ;;
-  *) echo 'Usage: bash setup_deletion_server.sh [env|check|prepare|benchmark|teacher|pilot|run|start|evaluate|test]'; exit 2 ;;
+  check|prepare|benchmark|teacher|pilot|run|start|evaluate|parallel|parallel-benchmark|parallel-evaluate|test) ;;
+  *) echo 'Usage: bash setup_deletion_server.sh [env|check|benchmark|start|parallel|parallel-benchmark|parallel-evaluate|evaluate|test]'; exit 2 ;;
 esac
 if [[ ! -x .venv/bin/python ]]; then
   echo 'First run: bash setup_deletion_server.sh env'
@@ -31,7 +31,17 @@ task_log="logs/deletion_server_${mode}_$(date +%Y%m%d_%H%M%S)_$$.log"
 echo "Project: $PWD"
 echo "Log: $PWD/$task_log"
 if [[ "$mode" == "test" ]]; then
-  .venv/bin/python -m pytest -q tests/test_deletion.py tests/test_deletion_server.py "$@" 2>&1 | tee -a "$task_log"
+  .venv/bin/python -m pytest -q tests/test_deletion.py tests/test_deletion_server.py tests/test_deletion_parallel.py "$@" 2>&1 | tee -a "$task_log"
+  exit 0
+fi
+case "$mode" in
+  parallel) parallel_action=start ;;
+  parallel-benchmark) parallel_action=calibrate ;;
+  parallel-evaluate) parallel_action=evaluate ;;
+  *) parallel_action='' ;;
+esac
+if [[ -n "$parallel_action" ]]; then
+  .venv/bin/python -m coco_kd.deletion_parallel "$parallel_action" "$@" 2>&1 | tee -a "$task_log"
   exit 0
 fi
 options=(--config configs/deletion_server.json)
